@@ -1,10 +1,23 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import * as Joi from '@hapi/joi';
+import { ConfigModule } from '@nestjs/config';
+import { RecipeModule } from './recipe/api/recipe.module';
+import { DatabaseModule } from './recipe/infrastructure/data-source/postgres/database.module';
+import { RecipeService } from './recipe/core/services/recipe.service';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [RecipeModule, ConfigModule.forRoot({
+    validationSchema: Joi.object({
+      POSTGRES_HOST: Joi.string().required(),
+      POSTGRES_PORT: Joi.number().required(),
+      POSTGRES_USER: Joi.string().required(),
+      POSTGRES_PASSWORD: Joi.string().required(),
+      POSTGRES_DB: Joi.string().required(),
+      PORT: Joi.number(),
+    })
+  }), DatabaseModule, ],
+  controllers: [],
+  providers: [RecipeService],
 })
+
 export class AppModule {}
