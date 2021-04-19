@@ -4,9 +4,12 @@ import { ConfigModule } from '@nestjs/config';
 import { RecipeModule } from './recipe/api/recipe.module';
 import { DatabaseModule } from './recipe/infrastructure/data-source/postgres/database.module';
 import { RecipeService } from './recipe/core/services/recipe.service';
+import { UserService } from './recipe/core/services/user.service';
+import { UserModule } from './recipe/api/user.module';
+import { UserGateway } from './recipe/api/gateways/user.gateway';
 
 @Module({
-  imports: [RecipeModule, ConfigModule.forRoot({
+  imports: [RecipeModule, UserModule, ConfigModule.forRoot({
     validationSchema: Joi.object({
       POSTGRES_HOST: Joi.string().required(),
       POSTGRES_PORT: Joi.number().required(),
@@ -15,9 +18,9 @@ import { RecipeService } from './recipe/core/services/recipe.service';
       POSTGRES_DB: Joi.string().required(),
       PORT: Joi.number(),
     })
-  }), DatabaseModule, ],
+  }), DatabaseModule],
   controllers: [],
-  providers: [RecipeService],
+  providers: [],
 })
 
 export class AppModule {}
