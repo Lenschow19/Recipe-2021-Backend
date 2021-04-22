@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { RecipeModule } from './recipe/api/recipe.module';
 import { DatabaseModule } from './recipe/infrastructure/data-source/postgres/database.module';
 import { UserModule } from './recipe/api/user.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [RecipeModule, UserModule, ConfigModule.forRoot({
@@ -15,7 +16,7 @@ import { UserModule } from './recipe/api/user.module';
       POSTGRES_DB: Joi.string().required(),
       PORT: Joi.number(),
     })
-  }), DatabaseModule],
+  }), DatabaseModule, AuthModule],
   controllers: [],
   providers: [],
 })

@@ -6,10 +6,11 @@ import { UserGateway } from './gateways/user.gateway';
 import { UserController } from './controllers/user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../infrastructure/data-source/postgres/entities/user.entity';
+import { AuthModule } from '../../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
-  providers: [{provide: IUserServiceProvider, useClass: UserService}, UserGateway, AuthenticationHelper],
+  imports: [TypeOrmModule.forFeature([UserEntity]), AuthModule],
+  providers: [{provide: IUserServiceProvider, useClass: UserService}, UserGateway],
   controllers: [UserController],
   exports: [IUserServiceProvider]
 

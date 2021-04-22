@@ -74,4 +74,17 @@ export class UserService implements IUserService{
     return JSON.parse(JSON.stringify(foundUser));
   }
 
+  generateJWTToken(user: User): string {
+
+    if(user == null){
+      throw new Error('User cant be null');
+    }
+    if(user.password == null || user.salt == null)
+    {
+      throw new Error('User is missing a password or salt');
+    }
+
+    return this.authenticationHelper.generateJWTToken(user);
+  }
+
 }

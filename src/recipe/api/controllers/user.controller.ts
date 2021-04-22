@@ -1,9 +1,19 @@
-import { Controller, Get, HttpException, HttpStatus, Inject, Post, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Post,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { MessageBody } from '@nestjs/websockets';
 import { IUserService, IUserServiceProvider } from '../../core/primary-ports/user.service.interface';
 import { LoginDto } from '../dtos/login.dto';
 import { User } from '../../core/models/user';
 import { STATUS_CODES } from 'http';
+import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -21,7 +31,13 @@ export class UserController {
         throw new HttpException('Error loading user', HttpStatus.INTERNAL_SERVER_ERROR);
       }
 
-      return foundUser;
+
+      var tokenString = this.userService.generateJWTToken(foundUser);
+
+
+
+
+      return tokenString;
     }
     catch (e)
     {
@@ -43,6 +59,20 @@ export class UserController {
       }
 
       return addedUser;
+    }
+    catch (e)
+    {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('test')
+  async test(){
+
+    try
+    {
+      return 5;
     }
     catch (e)
     {

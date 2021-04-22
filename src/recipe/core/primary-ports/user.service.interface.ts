@@ -12,5 +12,5 @@ export interface IUserService{
   addUser(user: User): Promise<User>
 
   validateUser(ID: number): Promise<User>
-
+  generateJWTToken(user: User): string
 }
