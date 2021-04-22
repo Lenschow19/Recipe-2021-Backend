@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RecipeEntity } from '../../infrastructure/data-source/postgres/entities/recipe.entity';
 import { IngredientEntryEntity } from '../../infrastructure/data-source/postgres/entities/ingredient-entry.entity';
+import { Filter } from '../models/filter';
+import { FilterList } from '../models/filterList';
 
 @Injectable()
 export class RecipeService implements IRecipeService{
@@ -43,6 +45,38 @@ export class RecipeService implements IRecipeService{
     await this.recipeRepository.save(newRecipe);
 
     return true;
+  }
+
+  async getRecipes(filter: Filter): Promise<FilterList<Recipe>> {
+
+    let qb = this.recipeRepository.createQueryBuilder("recipe");
+
+    if(filter.name != null && filter.name !== '')
+    {
+      qb.where(`title ILIKE :name`, { name: `%${filter.name}%` });
+    }
+
+    if(filter.sorting != null && filter.sorting === 'asc')
+    {
+      if(filter.sortingType != null && filter.sortingType === 'ALF')
+      {
+        qb.orderBy("title", "ASC");
+      }
+    }
+
+    else if(filter.sorting != null && filter.sorting === 'desc')
+    {
+      if(filter.sortingType != null && filter.sortingType === 'ALF')
+      {
+        qb.orderBy("title", "DESC");
+      }
+    }
+
+    qb.take(filter.itemsPrPage);
+    qb.skip((filter.currentPage - 1) * filter.itemsPrPage);
+    const [result, total] = await qb.getManyAndCount();
+    let recipeList: FilterList<Recipe> = {totalItems: total, list: JSON.parse(JSON.stringify(result))}
+    return recipeList;
   }
 
 }

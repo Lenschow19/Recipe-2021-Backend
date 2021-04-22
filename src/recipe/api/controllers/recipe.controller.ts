@@ -5,6 +5,7 @@ import { Recipe } from '../../core/models/recipe';
 import { IUserService, IUserServiceProvider } from '../../core/primary-ports/user.service.interface';
 import { IRecipeService, IRecipeServiceProvider } from '../../core/primary-ports/recipe.service.interface';
 import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
+import { Filter } from '../../core/models/filter';
 
 @Controller('recipe')
 export class RecipeController {
@@ -35,6 +36,14 @@ export class RecipeController {
     {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
+  }
+
+  @Get('getRecipes')
+  async getRecipes(){
+
+    //Should get filter from URL
+    let filter: Filter = {itemsPrPage: 15, currentPage: 1, name: 'a', sorting: 'desc', sortingType: 'ALF'}
+    return this.recipeService.getRecipes(filter);
 
   }
 
