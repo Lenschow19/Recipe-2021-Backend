@@ -13,7 +13,7 @@ export class RecipeController {
   @Post('create')
   async createRecipe(@MessageBody() recipe: Recipe){
 
-    // console.log(recipe);
+    console.log(recipe);
 
     try
     {
