@@ -1,6 +1,6 @@
 import { Hmac } from 'crypto';
-import { LoginDto } from '../../api/dtos/login.dto';
-import { User } from '../../core/models/user';
+import { LoginDto } from '../recipe/api/dtos/login.dto';
+import { User } from '../recipe/core/models/user';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { Injectable } from '@nestjs/common';
 
@@ -40,6 +40,11 @@ export class AuthenticationHelper {
     const payload = {ID: user.ID, username: user.username};
     const options: JwtSignOptions = {secret: this.secretKey, algorithm: 'HS256'}
     return this.jwtService.sign(payload, options);
+  }
+
+  validateJWTToken(token: string){
+    const options: JwtSignOptions = {secret: this.secretKey, algorithm: 'HS256'}
+    return this.jwtService.verify(token, options);
   }
 
 }

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AuthenticationHelper } from '../recipe/infrastructure/security/authentication.helper';
+import { AuthenticationHelper } from './authentication.helper';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';

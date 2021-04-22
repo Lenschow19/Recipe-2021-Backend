@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IUserService } from '../primary-ports/user.service.interface';
-import { AuthenticationHelper } from '../../infrastructure/security/authentication.helper';
+import { AuthenticationHelper } from '../../../auth/authentication.helper';
 import { LoginDto } from '../../api/dtos/login.dto';
 import { User } from '../models/user';
 import { log } from 'util';
@@ -85,6 +85,11 @@ export class UserService implements IUserService{
     }
 
     return this.authenticationHelper.generateJWTToken(user);
+  }
+
+  verifyJWTToken(token: string): boolean{
+    try{return this.authenticationHelper.validateJWTToken(token);}
+    catch (e) {throw new Error('Invalid signature');}
   }
 
 }
