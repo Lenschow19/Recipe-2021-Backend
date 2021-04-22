@@ -24,11 +24,15 @@ export class RecipeController {
       }
 
       const addedRecipe = await this.recipeService.createRecipe(recipe);
+
+      if(addedRecipe == null){
+        throw new HttpException('Error saving recipe', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+
       return true;
     }
     catch (e)
     {
-      console.log(e);
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
 
