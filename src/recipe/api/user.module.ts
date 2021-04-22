@@ -10,8 +10,8 @@ import { UserEntity } from '../infrastructure/data-source/postgres/entities/user
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity])],
   providers: [{provide: IUserServiceProvider, useClass: UserService}, UserGateway, AuthenticationHelper],
-  exports: [IUserServiceProvider, AuthenticationHelper],
-  controllers: [UserController]
+  controllers: [UserController],
+  exports: [IUserServiceProvider]
 
 })
 export class UserModule {

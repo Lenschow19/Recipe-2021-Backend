@@ -1,7 +1,7 @@
 import { LoginDto } from '../../api/dtos/login.dto';
 import { User } from '../models/user';
 
-export const IUserServiceProvider = 'IRecipeServiceProvider'
+export const IUserServiceProvider = 'IUserServiceProvider'
 export interface IUserService{
 
   generateSalt(): string
@@ -10,5 +10,7 @@ export interface IUserService{
   login(loginDTO: LoginDto): Promise<User>
   createUser(loginDTO: LoginDto): User
   addUser(user: User): Promise<User>
+
+  validateUser(ID: number): Promise<User>
 
 }

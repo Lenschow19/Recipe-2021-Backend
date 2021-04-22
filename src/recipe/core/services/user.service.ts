@@ -64,4 +64,14 @@ export class UserService implements IUserService{
     return newUser;
   }
 
+  async validateUser(ID: number): Promise<User> {
+
+    const foundUser = await this.userRepository.findOne({where: {ID: ID}});
+    if(foundUser == null){
+      throw new Error('No user found');
+    }
+
+    return JSON.parse(JSON.stringify(foundUser));
+  }
+
 }
