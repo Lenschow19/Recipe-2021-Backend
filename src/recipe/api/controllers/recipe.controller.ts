@@ -1,19 +1,19 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Inject, Post, UseGuards } from '@nestjs/common';
 import { MessageBody, WebSocketServer } from '@nestjs/websockets';
 import { User } from '../../core/models/user';
 import { Recipe } from '../../core/models/recipe';
 import { IUserService, IUserServiceProvider } from '../../core/primary-ports/user.service.interface';
 import { IRecipeService, IRecipeServiceProvider } from '../../core/primary-ports/recipe.service.interface';
+import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 
 @Controller('recipe')
 export class RecipeController {
 
   constructor(@Inject(IUserServiceProvider) private userService: IUserService, @Inject(IRecipeServiceProvider) private recipeService: IRecipeService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post('create')
   async createRecipe(@MessageBody() recipe: Recipe){
-
-    console.log(recipe);
 
     try
     {

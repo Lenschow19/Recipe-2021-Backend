@@ -1,6 +1,7 @@
-import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Inject } from '@nestjs/common';
 import { IRecipeService, IRecipeServiceProvider } from '../../core/primary-ports/recipe.service.interface';
+import { Recipe } from '../../core/models/recipe';
 
 @WebSocketGateway()
 export class RecipeGateway {
@@ -9,8 +10,11 @@ export class RecipeGateway {
 
   constructor(@Inject(IRecipeServiceProvider) private recipeService: IRecipeService) {}
 
-  @SubscribeMessage('message')
-  handleMessage(client: any, payload: any): string {
-    return 'Hello world!';
+  @SubscribeMessage('createStock')
+  async handleCreateEvent(@MessageBody() recipe: Recipe) {
+
+
+
+
   }
 }

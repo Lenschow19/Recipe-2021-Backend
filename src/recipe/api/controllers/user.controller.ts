@@ -14,6 +14,7 @@ import { LoginDto } from '../dtos/login.dto';
 import { User } from '../../core/models/user';
 import { STATUS_CODES } from 'http';
 import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
+import { LoginResponseDto } from '../dtos/login.response.dto';
 
 @Controller('user')
 export class UserController {
@@ -25,19 +26,16 @@ export class UserController {
 
     try
     {
-      let foundUser: User = await this.userService.login(loginDto);
+
+      const foundUser: User = await this.userService.login(loginDto);
 
       if(foundUser == null){
         throw new HttpException('Error loading user', HttpStatus.INTERNAL_SERVER_ERROR);
       }
 
-
-      var tokenString = this.userService.generateJWTToken(foundUser);
-
-
-
-
-      return tokenString;
+      const tokenString = this.userService.generateJWTToken(foundUser);
+      const responseDTO: LoginResponseDto = {token: tokenString};
+      return responseDTO;
     }
     catch (e)
     {
@@ -59,20 +57,6 @@ export class UserController {
       }
 
       return addedUser;
-    }
-    catch (e)
-    {
-      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('test')
-  async test(){
-
-    try
-    {
-      return 5;
     }
     catch (e)
     {
