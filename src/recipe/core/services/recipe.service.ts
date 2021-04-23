@@ -96,4 +96,21 @@ export class RecipeService implements IRecipeService{
     return JSON.parse(JSON.stringify(categories));
   }
 
+  async getRecipeById(ID: number): Promise<Recipe> {
+
+    if(ID <= 0)
+    {
+      throw new Error('Incorrect ID entered');
+    }
+
+    let qb = this.recipeRepository.createQueryBuilder("recipe");
+    qb.leftJoinAndSelect('recipe.user', 'user');
+    qb.leftJoinAndSelect('recipe.ingredientEntries', 'ingredientEntries');
+    qb.leftJoinAndSelect('recipe.category', 'category');
+    qb.where(`recipe.ID = :ID`, { ID: `${ID}`});
+
+    const recipe: RecipeEntity = await qb.getOne();
+    return JSON.parse(JSON.stringify(recipe));
+  }
+
 }

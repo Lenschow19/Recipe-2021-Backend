@@ -9,5 +9,6 @@ export interface IRecipeService{
   createRecipe(recipe: Recipe): Promise<boolean>
   getRecipes(filter: Filter): Promise<FilterList<Recipe>>
   getRecipeCategories(): Promise<Category>
+  getRecipeById(ID: number): Promise<Recipe>
 
 }

@@ -48,4 +48,23 @@ export class RecipeController {
     return await this.recipeService.getRecipeCategories();
   }
 
+  @Get('getById')
+  async getRecipeByID(@MessageBody() data: any){
+    try
+    {
+      const recipe: Recipe = await this.recipeService.getRecipeById(data.ID);
+      if(recipe == null)
+      {
+        throw new Error('Error loading recipe with ID: ' + data.ID);
+      }
+
+      return recipe;
+
+    }
+    catch (e)
+    {
+      throw new HttpException('Error loading recipe with ID: ' + data.ID, HttpStatus.BAD_REQUEST);
+    }
+  }
+
 }
