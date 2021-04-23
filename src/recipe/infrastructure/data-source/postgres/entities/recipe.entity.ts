@@ -2,6 +2,7 @@ import { Column, Entity, Index, ManyToOne, OneToMany, PrimaryColumn, PrimaryGene
 import { IngredientEntry } from '../../../../core/models/ingredient-entry';
 import { IngredientEntryEntity } from './ingredient-entry.entity';
 import { UserEntity } from './user.entity';
+import { CategoryEntity } from './category.entity';
 
 @Entity()
 export class RecipeEntity {
@@ -27,5 +28,9 @@ export class RecipeEntity {
   @Index()
   @ManyToOne(() => UserEntity, (user: UserEntity) => user.recipes)
   public user: UserEntity
+
+  @Index()
+  @ManyToOne(() => CategoryEntity, (category: CategoryEntity) => category.recipes)
+  public category: CategoryEntity
 
 }

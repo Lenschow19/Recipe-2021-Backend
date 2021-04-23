@@ -7,9 +7,10 @@ import { RecipeGateway } from './gateways/recipe.gateway';
 import { RecipeEntity } from '../infrastructure/data-source/postgres/entities/recipe.entity';
 import { UserModule } from './user.module';
 import { IngredientEntryEntity } from '../infrastructure/data-source/postgres/entities/ingredient-entry.entity';
+import { CategoryEntity } from '../infrastructure/data-source/postgres/entities/category.entity';
 
 @Module({
-  imports: [UserModule, TypeOrmModule.forFeature([RecipeEntity, IngredientEntryEntity]),],
+  imports: [UserModule, TypeOrmModule.forFeature([RecipeEntity, IngredientEntryEntity, CategoryEntity]),],
   providers: [{provide: IRecipeServiceProvider, useClass: RecipeService}, RecipeGateway],
   controllers: [RecipeController],
   exports: [IRecipeServiceProvider]

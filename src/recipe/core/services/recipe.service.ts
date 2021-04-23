@@ -7,13 +7,15 @@ import { RecipeEntity } from '../../infrastructure/data-source/postgres/entities
 import { IngredientEntryEntity } from '../../infrastructure/data-source/postgres/entities/ingredient-entry.entity';
 import { Filter } from '../models/filter';
 import { FilterList } from '../models/filterList';
+import { Category } from '../models/category';
+import { CategoryEntity } from '../../infrastructure/data-source/postgres/entities/category.entity';
 
 @Injectable()
 export class RecipeService implements IRecipeService{
 
   constructor(@InjectRepository(RecipeEntity) private recipeRepository: Repository<RecipeEntity>,
-              @InjectRepository(IngredientEntryEntity) private ingredientRepository: Repository<IngredientEntryEntity>
-              ) {}
+              @InjectRepository(IngredientEntryEntity) private ingredientRepository: Repository<IngredientEntryEntity>,
+              @InjectRepository(CategoryEntity) private categoryRepository: Repository<CategoryEntity>){}
 
   async createRecipe(recipe: Recipe): Promise<boolean> {
 
@@ -26,7 +28,7 @@ export class RecipeService implements IRecipeService{
     }
 
     if(recipe.imageURL === ''){
-      //Insert some standard imageURL here
+      recipe.imageURL = 'https://firebasestorage.googleapis.com/v0/b/eb-sdm3.appspot.com/o/NoImage.png?alt=media&token=9f213b80-6356-4f8e-83b6-301936912a6e';
     }
 
     if(recipe.ingredientEntries.length < 1){
@@ -35,6 +37,16 @@ export class RecipeService implements IRecipeService{
 
     if(recipe.preparations.length < 1 || recipe.description.length > 1000){
       throw new Error('Recipe preparation description must be between 1 and 1000 characters');
+    }
+
+    if(recipe.category == null){
+      throw new Error('Recipe must have a category');
+    }
+
+    const category = await this.categoryRepository.findOne(recipe.category.ID)
+    if(category == null)
+    {
+      throw new Error('No such category found. Please refresh page.');
     }
 
     const ingredients = await this.ingredientRepository.create(recipe.ingredientEntries);
@@ -77,6 +89,11 @@ export class RecipeService implements IRecipeService{
     const [result, total] = await qb.getManyAndCount();
     let recipeList: FilterList<Recipe> = {totalItems: total, list: JSON.parse(JSON.stringify(result))}
     return recipeList;
+  }
+
+  async getRecipeCategories(): Promise<Category>{
+    const categories: CategoryEntity[] = await this.categoryRepository.find();
+    return JSON.parse(JSON.stringify(categories));
   }
 
 }

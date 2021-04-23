@@ -41,7 +41,11 @@ export class RecipeController {
   @Get('getRecipes')
   async getRecipes(@Query() filter: Filter){
     return this.recipeService.getRecipes(filter);
+  }
 
+  @Get('recipeCategories')
+  async getRecipeCategories(){
+    return await this.recipeService.getRecipeCategories();
   }
 
 }
