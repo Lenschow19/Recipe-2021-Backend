@@ -12,8 +12,6 @@ import { MessageBody } from '@nestjs/websockets';
 import { IUserService, IUserServiceProvider } from '../../core/primary-ports/user.service.interface';
 import { LoginDto } from '../dtos/login.dto';
 import { User } from '../../core/models/user';
-import { STATUS_CODES } from 'http';
-import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import { LoginResponseDto } from '../dtos/login.response.dto';
 
 @Controller('user')

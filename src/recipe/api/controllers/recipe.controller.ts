@@ -6,6 +6,7 @@ import { IUserService, IUserServiceProvider } from '../../core/primary-ports/use
 import { IRecipeService, IRecipeServiceProvider } from '../../core/primary-ports/recipe.service.interface';
 import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import { Filter } from '../../core/models/filter';
+import { query } from 'express';
 
 @Controller('recipe')
 export class RecipeController {
@@ -48,14 +49,19 @@ export class RecipeController {
     return await this.recipeService.getRecipeCategories();
   }
 
-  @Get('getById')
-  async getRecipeByID(@MessageBody() data: any){
+  @UseGuards(JwtAuthGuard)
+  @Get('getPersonalById')
+  async getPersonalRecipeByID(@Query() data: any){
+
+    //Get user ID here and Insert in query.
+    const ID = data.ID;
+
     try
     {
-      const recipe: Recipe = await this.recipeService.getRecipeById(data.ID);
+      const recipe: Recipe = await this.recipeService.getRecipeById(ID);
       if(recipe == null)
       {
-        throw new Error('Error loading recipe with ID: ' + data.ID);
+        throw new Error('Error loading recipe with ID: ' + ID);
       }
 
       return recipe;
@@ -63,7 +69,7 @@ export class RecipeController {
     }
     catch (e)
     {
-      throw new HttpException('Error loading recipe with ID: ' + data.ID, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Error loading recipe with ID: ' + ID, HttpStatus.BAD_REQUEST);
     }
   }
 
