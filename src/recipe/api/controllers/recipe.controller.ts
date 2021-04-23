@@ -7,6 +7,7 @@ import { IRecipeService, IRecipeServiceProvider } from '../../core/primary-ports
 import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import { Filter } from '../../core/models/filter';
 import { query } from 'express';
+import { RecipeGetDto } from '../dtos/recipe.get.dto';
 
 @Controller('recipe')
 export class RecipeController {
@@ -50,18 +51,23 @@ export class RecipeController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('getPersonalById')
-  async getPersonalRecipeByID(@Query() data: any){
+  @Post('getPersonalById')
+  async getPersonalByID(@MessageBody() recipeGetDTO: RecipeGetDto){
+    return await this.getRecipeByID(recipeGetDTO);
+  }
 
-    //Get user ID here and Insert in query.
-    const ID = data.ID;
+  @Post('getById')
+  async getByID(@MessageBody() recipeGetDTO: RecipeGetDto){
+    return await this.getRecipeByID(recipeGetDTO);
+  }
 
+  async getRecipeByID(recipeGetDTO): Promise<Recipe>{
     try
     {
-      const recipe: Recipe = await this.recipeService.getRecipeById(ID);
+      const recipe: Recipe = await this.recipeService.getRecipeById(recipeGetDTO);
       if(recipe == null)
       {
-        throw new Error('Error loading recipe with ID: ' + ID);
+        throw new Error('Error loading recipe with ID: ' + recipeGetDTO.recipeID);
       }
 
       return recipe;
@@ -69,7 +75,7 @@ export class RecipeController {
     }
     catch (e)
     {
-      throw new HttpException('Error loading recipe with ID: ' + ID, HttpStatus.BAD_REQUEST);
+      throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.BAD_REQUEST);
     }
   }
 

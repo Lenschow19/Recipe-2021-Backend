@@ -9,6 +9,7 @@ import { Filter } from '../models/filter';
 import { FilterList } from '../models/filterList';
 import { Category } from '../models/category';
 import { CategoryEntity } from '../../infrastructure/data-source/postgres/entities/category.entity';
+import { RecipeGetDto } from '../../api/dtos/recipe.get.dto';
 
 @Injectable()
 export class RecipeService implements IRecipeService{
@@ -68,6 +69,11 @@ export class RecipeService implements IRecipeService{
       qb.where(`title ILIKE :name`, { name: `%${filter.name}%` });
     }
 
+    if(filter.category != null && +filter.category > 0)
+    {
+      qb.where(`recipe.categoryID = :categoryID`, { categoryID: `${filter.category}` });
+    }
+
     if(filter.sorting != null && filter.sorting === 'asc')
     {
       if(filter.sortingType != null && filter.sortingType === 'ALF')
@@ -96,18 +102,29 @@ export class RecipeService implements IRecipeService{
     return JSON.parse(JSON.stringify(categories));
   }
 
-  async getRecipeById(ID: number): Promise<Recipe> {
+  async getRecipeById(recipeGetDTO: RecipeGetDto): Promise<Recipe> {
 
-    if(ID <= 0)
+    if(recipeGetDTO.recipeID <= 0)
     {
-      throw new Error('Incorrect ID entered');
+      throw new Error('Incorrect recipe ID entered');
     }
 
     let qb = this.recipeRepository.createQueryBuilder("recipe");
     qb.leftJoinAndSelect('recipe.user', 'user');
     qb.leftJoinAndSelect('recipe.ingredientEntries', 'ingredientEntries');
     qb.leftJoinAndSelect('recipe.category', 'category');
-    qb.where(`recipe.ID = :ID`, { ID: `${ID}`});
+    qb.where(`recipe.ID = :ID`, { ID: `${recipeGetDTO.recipeID}`});
+
+    if(recipeGetDTO.userID !== undefined)
+    {
+      if(recipeGetDTO.userID <= 0)
+      {
+        throw new Error('Incorrect user ID entered');
+      }
+
+      qb.andWhere(`user.ID = :ID`, { ID: `${recipeGetDTO.userID}`});
+
+    }
 
     const recipe: RecipeEntity = await qb.getOne();
     return JSON.parse(JSON.stringify(recipe));
