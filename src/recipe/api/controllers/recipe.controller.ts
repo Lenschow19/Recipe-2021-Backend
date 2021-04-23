@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Inject, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Inject, Post, Query, UseGuards } from '@nestjs/common';
 import { MessageBody, WebSocketServer } from '@nestjs/websockets';
 import { User } from '../../core/models/user';
 import { Recipe } from '../../core/models/recipe';
@@ -39,10 +39,7 @@ export class RecipeController {
   }
 
   @Get('getRecipes')
-  async getRecipes(){
-
-    //Should get filter from URL
-    let filter: Filter = {itemsPrPage: 15, currentPage: 1, name: 'a', sorting: 'desc', sortingType: 'ALF'}
+  async getRecipes(@Query() filter: Filter){
     return this.recipeService.getRecipes(filter);
 
   }
