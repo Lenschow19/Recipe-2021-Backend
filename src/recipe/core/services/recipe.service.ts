@@ -18,37 +18,9 @@ export class RecipeService implements IRecipeService{
               @InjectRepository(IngredientEntryEntity) private ingredientRepository: Repository<IngredientEntryEntity>,
               @InjectRepository(CategoryEntity) private categoryRepository: Repository<CategoryEntity>){}
 
-  async createRecipe(recipe: Recipe): Promise<boolean> {
+  async createRecipe(recipe: Recipe): Promise<Recipe> {
 
-    if(recipe.title.length < 5 || recipe.title.length > 32){
-      throw new Error('Recipe name must be between 5 and 32 characters');
-    }
-
-    if(recipe.description.length < 10 || recipe.description.length > 1000){
-      throw new Error('Recipe description must be between 10 and 1000 characters');
-    }
-
-    if(recipe.imageURL === ''){
-      recipe.imageURL = 'https://firebasestorage.googleapis.com/v0/b/eb-sdm3.appspot.com/o/NoImage.png?alt=media&token=9f213b80-6356-4f8e-83b6-301936912a6e';
-    }
-
-    if(recipe.ingredientEntries.length < 1){
-      throw new Error('Recipe requires ingredient(s)');
-    }
-
-    if(recipe.preparations.length < 1 || recipe.description.length > 1000){
-      throw new Error('Recipe preparation description must be between 1 and 1000 characters');
-    }
-
-    if(recipe.category == null){
-      throw new Error('Recipe must have a category');
-    }
-
-    const category = await this.categoryRepository.findOne(recipe.category.ID)
-    if(category == null)
-    {
-      throw new Error('No such category found. Please refresh page.');
-    }
+    await this.validateRecipe(recipe);
 
     const ingredients = await this.ingredientRepository.create(recipe.ingredientEntries);
     await this.ingredientRepository.save(ingredients);
@@ -57,7 +29,7 @@ export class RecipeService implements IRecipeService{
     const newRecipe = await this.recipeRepository.create(recipe);
     await this.recipeRepository.save(newRecipe);
 
-    return true;
+    try{return JSON.parse(JSON.stringify(newRecipe));}catch (e) {return null;}
   }
 
   async getRecipes(filter: Filter): Promise<FilterList<Recipe>> {
@@ -66,12 +38,12 @@ export class RecipeService implements IRecipeService{
 
     if(filter.name != null && filter.name !== '')
     {
-      qb.where(`title ILIKE :name`, { name: `%${filter.name}%` });
+      qb.andWhere(`title ILIKE :name`, { name: `%${filter.name}%` });
     }
 
     if(filter.category != null && +filter.category > 0)
     {
-      qb.where(`recipe.categoryID = :categoryID`, { categoryID: `${filter.category}` });
+      qb.andWhere(`recipe.categoryID = :categoryID`, { categoryID: `${filter.category}` });
     }
 
     if(filter.sorting != null && filter.sorting === 'asc')
@@ -113,7 +85,7 @@ export class RecipeService implements IRecipeService{
     qb.leftJoinAndSelect('recipe.user', 'user');
     qb.leftJoinAndSelect('recipe.ingredientEntries', 'ingredientEntries');
     qb.leftJoinAndSelect('recipe.category', 'category');
-    qb.where(`recipe.ID = :ID`, { ID: `${recipeGetDTO.recipeID}`});
+    qb.andWhere(`recipe.ID = :RecipeID`, { RecipeID: `${recipeGetDTO.recipeID}`});
 
     if(recipeGetDTO.userID !== undefined)
     {
@@ -122,12 +94,58 @@ export class RecipeService implements IRecipeService{
         throw new Error('Incorrect user ID entered');
       }
 
-      qb.andWhere(`user.ID = :ID`, { ID: `${recipeGetDTO.userID}`});
+      qb.andWhere(`user.ID = :UserID`, { UserID: `${recipeGetDTO.userID}`});
 
     }
-
     const recipe: RecipeEntity = await qb.getOne();
+    if(recipe == null){return null;}
     return JSON.parse(JSON.stringify(recipe));
+  }
+
+  async updateRecipe(recipe: Recipe): Promise<Recipe> {
+    await this.validateRecipe(recipe);
+
+    await this.ingredientRepository.createQueryBuilder().delete()
+      .where("recipeID = :ID", { ID: `${recipe.ID}`}).execute();
+
+    const ingredients = await this.ingredientRepository.create(recipe.ingredientEntries);
+    await this.ingredientRepository.save(ingredients);
+
+    recipe.ingredientEntries = ingredients;
+    const updatedRecipe = await this.recipeRepository.save(recipe);
+    return JSON.parse(JSON.stringify(updatedRecipe));
+  }
+
+  async validateRecipe(recipe: Recipe){
+    if(recipe.title.length < 5 || recipe.title.length > 32){
+      throw new Error('Recipe name must be between 5 and 32 characters');
+    }
+
+    if(recipe.description.length < 10 || recipe.description.length > 1000){
+      throw new Error('Recipe description must be between 10 and 1000 characters');
+    }
+
+    if(recipe.imageURL === ''){
+      recipe.imageURL = 'https://firebasestorage.googleapis.com/v0/b/eb-sdm3.appspot.com/o/NoImage.png?alt=media&token=9f213b80-6356-4f8e-83b6-301936912a6e';
+    }
+
+    if(recipe.ingredientEntries.length < 1){
+      throw new Error('Recipe requires ingredient(s)');
+    }
+
+    if(recipe.preparations.length < 1 || recipe.description.length > 1000){
+      throw new Error('Recipe preparation description must be between 1 and 1000 characters');
+    }
+
+    if(recipe.category == null){
+      throw new Error('Recipe must have a category');
+    }
+
+    const category = await this.categoryRepository.findOne(recipe.category.ID)
+    if(category == null)
+    {
+      throw new Error('No such category found. Please refresh page.');
+    }
   }
 
 }

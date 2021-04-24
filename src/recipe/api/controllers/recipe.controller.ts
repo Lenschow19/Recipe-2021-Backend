@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Inject, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Inject, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { MessageBody, WebSocketServer } from '@nestjs/websockets';
 import { User } from '../../core/models/user';
 import { Recipe } from '../../core/models/recipe';
@@ -32,7 +32,7 @@ export class RecipeController {
         throw new HttpException('Error saving recipe', HttpStatus.INTERNAL_SERVER_ERROR);
       }
 
-      return true;
+      return addedRecipe;
     }
     catch (e)
     {
@@ -50,32 +50,44 @@ export class RecipeController {
     return await this.recipeService.getRecipeCategories();
   }
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Post('getPersonalById')
   async getPersonalByID(@MessageBody() recipeGetDTO: RecipeGetDto){
-    return await this.getRecipeByID(recipeGetDTO);
+    try
+    {
+      const recipe: Recipe = await this.recipeService.getRecipeById(recipeGetDTO);
+      if(recipe == null) {throw new HttpException(`Could not find recipe with ID: ${recipeGetDTO.recipeID} for this user`, HttpStatus.NOT_FOUND);}
+      return recipe;
+    }
+    catch (e) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.INTERNAL_SERVER_ERROR);}
   }
 
   @Post('getById')
   async getByID(@MessageBody() recipeGetDTO: RecipeGetDto){
-    return await this.getRecipeByID(recipeGetDTO);
-  }
-
-  async getRecipeByID(recipeGetDTO): Promise<Recipe>{
     try
     {
       const recipe: Recipe = await this.recipeService.getRecipeById(recipeGetDTO);
-      if(recipe == null)
-      {
-        throw new Error('Error loading recipe with ID: ' + recipeGetDTO.recipeID);
-      }
-
+      if(recipe == null) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.NOT_FOUND);}
       return recipe;
+    }
+    catch (e) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.INTERNAL_SERVER_ERROR);}
+  }
 
+  @UseGuards(JwtAuthGuard)
+  @Put('update')
+  async updateRecipe(@MessageBody() recipe: Recipe){
+    try
+    {
+      const updatedRecipe = await this.recipeService.updateRecipe(recipe);
+      if(updatedRecipe == null)
+      {
+        throw new Error('Error updating recipe with ID: ' + recipe.ID);
+      }
+      return updatedRecipe;
     }
     catch (e)
     {
-      throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.BAD_REQUEST);
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
   }
 

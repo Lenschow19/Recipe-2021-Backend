@@ -7,9 +7,10 @@ import { RecipeGetDto } from '../../api/dtos/recipe.get.dto';
 export const IRecipeServiceProvider = 'IRecipeServiceProvider'
 export interface IRecipeService{
 
-  createRecipe(recipe: Recipe): Promise<boolean>
+  createRecipe(recipe: Recipe): Promise<Recipe>
   getRecipes(filter: Filter): Promise<FilterList<Recipe>>
   getRecipeCategories(): Promise<Category>
   getRecipeById(recipeGetDTO: RecipeGetDto): Promise<Recipe>
+  updateRecipe(recipe: Recipe): Promise<Recipe>
 
 }
