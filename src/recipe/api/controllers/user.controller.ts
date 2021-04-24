@@ -24,11 +24,10 @@ export class UserController {
 
     try
     {
-
       const foundUser: User = await this.userService.login(loginDto);
 
-      if(foundUser == null){
-        throw new HttpException('Error loading user', HttpStatus.INTERNAL_SERVER_ERROR);
+      if(foundUser == null ||foundUser == undefined){
+        throw new HttpException('Error loading user', HttpStatus.BAD_REQUEST);
       }
 
       const tokenString = this.userService.generateJWTToken(foundUser);
@@ -50,7 +49,7 @@ export class UserController {
       let createdUser: User = this.userService.createUser(loginDto);
       let addedUser: User = await this.userService.addUser(createdUser);
 
-      if(addedUser == null){
+      if(addedUser == null || addedUser == undefined){
         throw new HttpException('Error saving user to database', HttpStatus.INTERNAL_SERVER_ERROR);
       }
 

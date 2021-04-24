@@ -22,15 +22,11 @@ export class RecipeController {
     {
       let foundUser: User = await this.userService.validateUser(recipe.user.ID);
 
-      if(foundUser == null){
+      if(foundUser == null || foundUser == undefined){
         throw new HttpException('Error loading user', HttpStatus.INTERNAL_SERVER_ERROR);
       }
 
       const addedRecipe = await this.recipeService.createRecipe(recipe);
-
-      if(addedRecipe == null){
-        throw new HttpException('Error saving recipe', HttpStatus.INTERNAL_SERVER_ERROR);
-      }
 
       return addedRecipe;
     }
@@ -55,22 +51,18 @@ export class RecipeController {
   async getPersonalByID(@MessageBody() recipeGetDTO: RecipeGetDto){
     try
     {
-      const recipe: Recipe = await this.recipeService.getRecipeById(recipeGetDTO);
-      if(recipe == null) {throw new HttpException(`Could not find recipe with ID: ${recipeGetDTO.recipeID} for this user`, HttpStatus.NOT_FOUND);}
-      return recipe;
+      return await this.recipeService.getRecipeById(recipeGetDTO);
     }
-    catch (e) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.INTERNAL_SERVER_ERROR);}
+    catch (e) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.NOT_FOUND);}
   }
 
   @Post('getById')
   async getByID(@MessageBody() recipeGetDTO: RecipeGetDto){
     try
     {
-      const recipe: Recipe = await this.recipeService.getRecipeById(recipeGetDTO);
-      if(recipe == null) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.NOT_FOUND);}
-      return recipe;
+      return await this.recipeService.getRecipeById(recipeGetDTO);
     }
-    catch (e) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.INTERNAL_SERVER_ERROR);}
+    catch (e) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.NOT_FOUND);}
   }
 
   @UseGuards(JwtAuthGuard)
@@ -78,12 +70,7 @@ export class RecipeController {
   async updateRecipe(@MessageBody() recipe: Recipe){
     try
     {
-      const updatedRecipe = await this.recipeService.updateRecipe(recipe);
-      if(updatedRecipe == null)
-      {
-        throw new Error('Error updating recipe with ID: ' + recipe.ID);
-      }
-      return updatedRecipe;
+     return await this.recipeService.updateRecipe(recipe);
     }
     catch (e)
     {

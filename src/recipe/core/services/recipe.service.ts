@@ -21,7 +21,6 @@ export class RecipeService implements IRecipeService{
   async createRecipe(recipe: Recipe): Promise<Recipe> {
 
     await this.validateRecipe(recipe);
-
     const ingredients = await this.ingredientRepository.create(recipe.ingredientEntries);
     await this.ingredientRepository.save(ingredients);
 
@@ -29,7 +28,9 @@ export class RecipeService implements IRecipeService{
     const newRecipe = await this.recipeRepository.create(recipe);
     await this.recipeRepository.save(newRecipe);
 
-    try{return JSON.parse(JSON.stringify(newRecipe));}catch (e) {return null;}
+    if(newRecipe == null || newRecipe == undefined){throw new Error('Error saving recipe')}
+
+    return JSON.parse(JSON.stringify(newRecipe));
   }
 
   async getRecipes(filter: Filter): Promise<FilterList<Recipe>> {
@@ -98,7 +99,7 @@ export class RecipeService implements IRecipeService{
 
     }
     const recipe: RecipeEntity = await qb.getOne();
-    if(recipe == null){return null;}
+    if(recipe == null || recipe == undefined){throw new Error('Error loading this recipe')}
     return JSON.parse(JSON.stringify(recipe));
   }
 
@@ -113,6 +114,8 @@ export class RecipeService implements IRecipeService{
 
     recipe.ingredientEntries = ingredients;
     const updatedRecipe = await this.recipeRepository.save(recipe);
+
+    if(updatedRecipe == null || updatedRecipe == undefined){throw new Error('Error updating recipe')}
     return JSON.parse(JSON.stringify(updatedRecipe));
   }
 
