@@ -7,6 +7,7 @@ import { log } from 'util';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../infrastructure/data-source/postgres/entities/user.entity';
 import { Repository } from 'typeorm';
+import { LoginResponseDto } from '../../api/dtos/login.response.dto';
 
 @Injectable()
 export class UserService implements IUserService{
@@ -82,7 +83,7 @@ export class UserService implements IUserService{
     return this.authenticationHelper.generateJWTToken(user);
   }
 
-  verifyJWTToken(token: string): boolean{
+  verifyJWTToken(token: string): LoginResponseDto{
     try{return this.authenticationHelper.validateJWTToken(token);}
     catch (e) {throw new Error('Invalid signature');}
   }

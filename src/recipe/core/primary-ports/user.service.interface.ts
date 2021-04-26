@@ -1,5 +1,6 @@
 import { LoginDto } from '../../api/dtos/login.dto';
 import { User } from '../models/user';
+import { LoginResponseDto } from '../../api/dtos/login.response.dto';
 
 export const IUserServiceProvider = 'IUserServiceProvider'
 export interface IUserService{
@@ -13,5 +14,5 @@ export interface IUserService{
 
   validateUser(ID: number): Promise<User>
   generateJWTToken(user: User): string
-  verifyJWTToken(token: string): boolean
+  verifyJWTToken(token: string): LoginResponseDto
 }

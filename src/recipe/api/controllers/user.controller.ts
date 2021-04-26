@@ -62,9 +62,9 @@ export class UserController {
   }
 
   @Post('verifyToken')
-  verifyToken(@MessageBody() data: any){
-    try{return this.userService.verifyJWTToken(data.token);}
-    catch (e) {throw new HttpException(e.message, HttpStatus.UNAUTHORIZED);}
+  verifyToken(@MessageBody() loginResponseDTO: LoginResponseDto){
+    try{return this.userService.verifyJWTToken(loginResponseDTO.token);}
+    catch (e) {throw new HttpException(e.message, HttpStatus.NOT_FOUND);}
   }
 
 }

@@ -3,6 +3,7 @@ import { LoginDto } from '../recipe/api/dtos/login.dto';
 import { User } from '../recipe/core/models/user';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { Injectable } from '@nestjs/common';
+import { LoginResponseDto } from '../recipe/api/dtos/login.response.dto';
 
 const crypto = require('crypto');
 const saltLength = 16
@@ -42,9 +43,10 @@ export class AuthenticationHelper {
     return this.jwtService.sign(payload, options);
   }
 
-  validateJWTToken(token: string){
+  validateJWTToken(token: string): LoginResponseDto{
     const options: JwtSignOptions = {secret: this.secretKey, algorithm: 'HS256'}
-    return this.jwtService.verify(token, options);
+    this.jwtService.verify(token, options);
+    return {token: token};
   }
 
 }

@@ -24,7 +24,6 @@ export class RecipeGateway {
 
   @SubscribeMessage('joinDetailsRoom')
   async joinDetailsRoom(@MessageBody() listenDetailsDTO: ListenDetailsDto, @ConnectedSocket() client: Socket) {
-    console.log(listenDetailsDTO);
     client.leaveAll();
     client.join(`${listenDetailsDTO.room}${listenDetailsDTO.ID}`);
   }
