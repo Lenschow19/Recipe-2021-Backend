@@ -46,7 +46,7 @@ export class RecipeController {
     return await this.recipeService.getRecipeCategories();
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('getPersonalById')
   async getPersonalByID(@MessageBody() recipeGetDTO: RecipeGetDto){
     try
