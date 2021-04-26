@@ -51,7 +51,11 @@ export class RecipeService implements IRecipeService{
     {
       if(filter.sortingType != null && filter.sortingType === 'ALF')
       {
-        qb.orderBy("title", "ASC");
+        qb.orderBy("recipe.title", "ASC");
+      }
+      if(filter.sortingType != null && filter.sortingType === 'ADDED')
+      {
+        qb.orderBy("recipe.ID", "ASC");
       }
     }
 
@@ -59,7 +63,11 @@ export class RecipeService implements IRecipeService{
     {
       if(filter.sortingType != null && filter.sortingType === 'ALF')
       {
-        qb.orderBy("title", "DESC");
+        qb.orderBy("recipe.title", "DESC");
+      }
+      if(filter.sortingType != null && filter.sortingType === 'ADDED')
+      {
+        qb.orderBy("recipe.ID", "DESC");
       }
     }
 
