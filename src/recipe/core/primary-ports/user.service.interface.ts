@@ -12,7 +12,8 @@ export interface IUserService{
   createUser(loginDTO: LoginDto): User
   addUser(user: User): Promise<User>
 
-  validateUser(ID: number): Promise<User>
   generateJWTToken(user: User): string
   verifyJWTToken(token: string): LoginResponseDto
+  getUserById(userID: number): Promise<User>
+  updatePassword(ID: number, password: string, oldPassword: string): Promise<boolean>
 }

@@ -8,6 +8,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../infrastructure/data-source/postgres/entities/user.entity';
 import { Repository } from 'typeorm';
 import { LoginResponseDto } from '../../api/dtos/login.response.dto';
+import { RecipeGetDto } from '../../api/dtos/recipe.get.dto';
+import { Recipe } from '../models/recipe';
+import { RecipeEntity } from '../../infrastructure/data-source/postgres/entities/recipe.entity';
 
 @Injectable()
 export class UserService implements IUserService{
@@ -65,11 +68,6 @@ export class UserService implements IUserService{
     return newUser;
   }
 
-  async validateUser(ID: number): Promise<User> {
-    const foundUser = await this.userRepository.findOne({where: {ID: ID}});
-    return foundUser;
-  }
-
   generateJWTToken(user: User): string {
 
     if(user == null){
@@ -86,6 +84,41 @@ export class UserService implements IUserService{
   verifyJWTToken(token: string): LoginResponseDto{
     try{return this.authenticationHelper.validateJWTToken(token);}
     catch (e) {throw new Error('Invalid signature');}
+  }
+
+  async getUserById(userID: number): Promise<User> {
+
+    if(userID <= 0)
+    {
+      throw new Error('Incorrect user ID entered');
+    }
+
+    const foundUser = await this.userRepository.findOne({where: {ID: userID}});
+    if(foundUser == null || foundUser == undefined){throw new Error('User with such ID does not exist')}
+    return foundUser;
+  }
+
+  async updatePassword(userID: number, password: string, oldPassword: string): Promise<boolean> {
+
+    if(userID <= 0)
+    {
+      throw new Error('Incorrect user ID entered');
+    }
+
+    if(password == null || password.length < 8){
+      throw new Error('Password must be minimum 8 characters long');
+    }
+
+    const user: User = await this.getUserById(userID);
+
+    this.authenticationHelper.validateLogin(user, {username: user.username, password: oldPassword})
+    user.salt = this.authenticationHelper.generateSalt();
+    user.password = this.authenticationHelper.generateHash(password, user.salt);
+
+    const updatedUser = await this.userRepository.save(user);
+
+    if(updatedUser == null || updatedUser == undefined){throw new Error('Error updating user password')}
+    return true;
   }
 
 }

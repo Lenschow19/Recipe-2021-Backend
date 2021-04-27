@@ -20,7 +20,7 @@ export class RecipeController {
 
     try
     {
-      let foundUser: User = await this.userService.validateUser(recipe.user.ID);
+      let foundUser: User = await this.userService.getUserById(recipe.user.ID);
 
       if(foundUser == null || foundUser == undefined){
         throw new HttpException('Error loading user', HttpStatus.INTERNAL_SERVER_ERROR);
