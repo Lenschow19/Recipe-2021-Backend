@@ -87,12 +87,11 @@ export class UserController {
   async updatePassword(@MessageBody() userUpdateDTO: UserUpdateDto){
     try
     {
-      console.log(userUpdateDTO);
       const updated: boolean = await this.userService.updatePassword(userUpdateDTO.userID, userUpdateDTO.password, userUpdateDTO.oldPassword);
       if(!updated){throw new Error('Error updating user password');}
       return updated;
     }
-    catch (e) {console.log(e.message);throw new HttpException(e.message, HttpStatus.BAD_REQUEST);}
+    catch (e) {throw new HttpException(e.message, HttpStatus.BAD_REQUEST);}
   }
 
 }
