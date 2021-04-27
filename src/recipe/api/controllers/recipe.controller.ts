@@ -41,6 +41,12 @@ export class RecipeController {
     return this.recipeService.getRecipes(filter);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('getPersonalRecipes')
+  async getPersonalRecipes(@Query() filter: Filter){
+    return this.recipeService.getRecipes(filter);
+  }
+
   @Get('recipeCategories')
   async getRecipeCategories(){
     return await this.recipeService.getRecipeCategories();

@@ -7,4 +7,6 @@ export interface Filter{
   sorting?: string
   category?: number
 
+  userID?: number
+
 }

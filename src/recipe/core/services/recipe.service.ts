@@ -42,9 +42,14 @@ export class RecipeService implements IRecipeService{
       qb.andWhere(`title ILIKE :name`, { name: `%${filter.name}%` });
     }
 
-    if(filter.category != null && +filter.category > 0)
+    if(filter.category != null && filter.category > 0)
     {
       qb.andWhere(`recipe.categoryID = :categoryID`, { categoryID: `${filter.category}` });
+    }
+
+    if(filter.userID != null && filter.userID > 0)
+    {
+      qb.andWhere(`recipe.userID = :userID`, {userID: `${filter.userID}`});
     }
 
     if(filter.sorting != null && filter.sorting === 'asc')
