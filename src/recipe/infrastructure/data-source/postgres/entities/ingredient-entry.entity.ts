@@ -17,6 +17,6 @@ export class IngredientEntryEntity {
   public measurementUnit: string;
 
   @Index()
-  @ManyToOne(() => RecipeEntity, (recipe: RecipeEntity) => recipe.ingredientEntries)
+  @ManyToOne(() => RecipeEntity, (recipe: RecipeEntity) => recipe.ingredientEntries, { onDelete: "CASCADE"})
   public recipe: RecipeEntity
 }

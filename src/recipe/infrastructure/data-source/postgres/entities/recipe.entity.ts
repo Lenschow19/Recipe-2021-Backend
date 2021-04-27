@@ -22,7 +22,7 @@ export class RecipeEntity {
   @Column()
   public imageURL: string;
 
-  @OneToMany(() => IngredientEntryEntity, (ingredientEntity: IngredientEntryEntity) => ingredientEntity.recipe)
+  @OneToMany(() => IngredientEntryEntity, (ingredientEntity: IngredientEntryEntity) => ingredientEntity.recipe, {cascade: true})
   public ingredientEntries?: IngredientEntry[]
 
   @Index()

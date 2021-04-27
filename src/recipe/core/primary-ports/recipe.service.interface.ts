@@ -3,6 +3,7 @@ import { Filter } from '../models/filter';
 import { FilterList } from '../models/filterList';
 import { Category } from '../models/category';
 import { RecipeGetDto } from '../../api/dtos/recipe.get.dto';
+import { RecipeDeleteDto } from '../../api/dtos/recipe.delete.dto';
 
 export const IRecipeServiceProvider = 'IRecipeServiceProvider'
 export interface IRecipeService{
@@ -12,5 +13,6 @@ export interface IRecipeService{
   getRecipeCategories(): Promise<Category>
   getRecipeById(recipeGetDTO: RecipeGetDto): Promise<Recipe>
   updateRecipe(recipe: Recipe): Promise<Recipe>
+  deleteRecipe(recipeDeleteDTO: RecipeDeleteDto): Promise<boolean>
 
 }

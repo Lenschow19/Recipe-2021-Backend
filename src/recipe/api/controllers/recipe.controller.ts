@@ -1,4 +1,16 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Inject, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { MessageBody, WebSocketServer } from '@nestjs/websockets';
 import { User } from '../../core/models/user';
 import { Recipe } from '../../core/models/recipe';
@@ -8,6 +20,7 @@ import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import { Filter } from '../../core/models/filter';
 import { query } from 'express';
 import { RecipeGetDto } from '../dtos/recipe.get.dto';
+import { RecipeDeleteDto } from '../dtos/recipe.delete.dto';
 
 @Controller('recipe')
 export class RecipeController {
@@ -81,6 +94,22 @@ export class RecipeController {
     catch (e)
     {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('deleteRecipe')
+  async deleteRecipe(@MessageBody() recipeDeleteDTO: RecipeDeleteDto){
+    try
+    {
+      const deleted = await this.recipeService.deleteRecipe(recipeDeleteDTO);
+      if(!deleted){throw new Error('Error deleting recipe with ID ' + recipeDeleteDTO.recipeID)}
+      return deleted;
+    }
+    catch (e)
+    {
+      console.log(e.message);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

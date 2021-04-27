@@ -10,6 +10,7 @@ import { FilterList } from '../models/filterList';
 import { Category } from '../models/category';
 import { CategoryEntity } from '../../infrastructure/data-source/postgres/entities/category.entity';
 import { RecipeGetDto } from '../../api/dtos/recipe.get.dto';
+import { RecipeDeleteDto } from '../../api/dtos/recipe.delete.dto';
 
 @Injectable()
 export class RecipeService implements IRecipeService{
@@ -162,6 +163,17 @@ export class RecipeService implements IRecipeService{
     {
       throw new Error('No such category found. Please refresh page.');
     }
+  }
+
+  async deleteRecipe(recipeDeleteDTO: RecipeDeleteDto): Promise<boolean> {
+
+    const recipe = await this.recipeRepository.createQueryBuilder().delete()
+      .where("ID = :recipeID", { recipeID: `${recipeDeleteDTO.recipeID}`})
+      .andWhere("userID = :userID", {userID: `${recipeDeleteDTO.userID}`})
+      .execute();
+
+    if(recipe.affected){return true;}
+    return false;
   }
 
 }
