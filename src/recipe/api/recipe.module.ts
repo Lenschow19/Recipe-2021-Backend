@@ -8,10 +8,12 @@ import { RecipeEntity } from '../infrastructure/data-source/postgres/entities/re
 import { UserModule } from './user.module';
 import { IngredientEntryEntity } from '../infrastructure/data-source/postgres/entities/ingredient-entry.entity';
 import { CategoryEntity } from '../infrastructure/data-source/postgres/entities/category.entity';
+import { AppModule } from '../../app.module';
+import { SocketModule } from './socket.module';
 
 @Module({
-  imports: [UserModule, TypeOrmModule.forFeature([RecipeEntity, IngredientEntryEntity, CategoryEntity]),],
-  providers: [{provide: IRecipeServiceProvider, useClass: RecipeService}, RecipeGateway],
+  imports: [TypeOrmModule.forFeature([RecipeEntity, IngredientEntryEntity, CategoryEntity]), UserModule, SocketModule, ],
+  providers: [{provide: IRecipeServiceProvider, useClass: RecipeService}],
   controllers: [RecipeController],
   exports: [IRecipeServiceProvider]
 })

@@ -21,13 +21,13 @@ import { Filter } from '../../core/models/filter';
 import { query } from 'express';
 import { RecipeGetDto } from '../dtos/recipe.get.dto';
 import { RecipeDeleteDto } from '../dtos/recipe.delete.dto';
+import { ISocketService, ISocketServiceProvider } from '../../core/primary-ports/socket.service.interface';
 
 @Controller('recipe')
 export class RecipeController {
 
-  @WebSocketServer() server;
-
-  constructor(@Inject(IUserServiceProvider) private userService: IUserService, @Inject(IRecipeServiceProvider) private recipeService: IRecipeService) {}
+  constructor(@Inject(IUserServiceProvider) private userService: IUserService, @Inject(IRecipeServiceProvider) private recipeService: IRecipeService,
+              @Inject(ISocketServiceProvider) private socketService: ISocketService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
@@ -43,7 +43,7 @@ export class RecipeController {
 
       const addedRecipe = await this.recipeService.createRecipe(recipe);
 
-
+      this.socketService.emitRecipeCreateEvent(addedRecipe);
       return addedRecipe;
     }
     catch (e)
@@ -92,7 +92,9 @@ export class RecipeController {
   async updateRecipe(@MessageBody() recipe: Recipe){
     try
     {
-     return await this.recipeService.updateRecipe(recipe);
+      const updatedRecipe = await this.recipeService.updateRecipe(recipe);
+      this.socketService.emitRecipeUpdateEvent(updatedRecipe);
+      return updatedRecipe;
     }
     catch (e)
     {
