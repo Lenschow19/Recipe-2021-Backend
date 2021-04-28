@@ -130,7 +130,7 @@ export class RecipeService implements IRecipeService{
     const recipeConverted: Recipe = JSON.parse(JSON.stringify(recipe));
 
     const averageRating = await this.ratingRepository.createQueryBuilder('rating')
-      .select('CAST(SUM(rating.rating) AS DOUBLE PRECISION)/CAST(COUNT(rating) AS DOUBLE PRECISION)', 'average_rating').where('rating.recipeID = :recipeID', {recipeID: `${recipeID}`})
+    .select('CAST(CAST(SUM(rating.rating) AS DOUBLE PRECISION)/CAST(COUNT(rating) AS DOUBLE PRECISION) AS NUMERIC(5,2))', 'average_rating').where('rating.recipeID = :recipeID', {recipeID: `${recipeID}`})
       .getRawOne();
 
 
