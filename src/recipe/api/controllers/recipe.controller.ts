@@ -54,7 +54,11 @@ export class RecipeController {
 
   @Get('getRecipes')
   async getRecipes(@Query() filter: Filter){
-    return this.recipeService.getRecipes(filter);
+
+    try{return await this.recipeService.getRecipes(filter);}
+    catch (e) {throw new HttpException(e.message, HttpStatus.BAD_REQUEST);}
+
+
   }
 
   @UseGuards(JwtAuthGuard)

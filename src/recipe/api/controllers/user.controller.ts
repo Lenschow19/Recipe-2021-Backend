@@ -18,6 +18,7 @@ import { UserGetDto } from '../dtos/user.get.dto';
 import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import { UserUpdateDto } from '../dtos/user.update.dto';
 import { UserService } from '../../core/services/user.service';
+import { UserInfoDto } from '../dtos/user.info.dto';
 
 @Controller('user')
 export class UserController {
@@ -78,6 +79,17 @@ export class UserController {
     try
     {
       return await this.userService.getUserById(userGetDTO.userID);
+    }
+    catch (e) {throw new HttpException('Error loading user with ID: ' + userGetDTO.userID, HttpStatus.NOT_FOUND);}
+  }
+
+  @Get('getInfoByID')
+  async getInfoByID(@Query() userGetDTO: UserGetDto){
+    try
+    {
+      const user: User = await this.userService.getUserById(userGetDTO.userID);
+      const userInfoDTO: UserInfoDto = {username: user.username}
+      return userInfoDTO;
     }
     catch (e) {throw new HttpException('Error loading user with ID: ' + userGetDTO.userID, HttpStatus.NOT_FOUND);}
   }

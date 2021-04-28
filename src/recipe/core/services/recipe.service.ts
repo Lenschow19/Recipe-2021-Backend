@@ -48,8 +48,12 @@ export class RecipeService implements IRecipeService{
       qb.andWhere(`recipe.categoryID = :categoryID`, { categoryID: `${filter.category}` });
     }
 
-    if(filter.userID != null && filter.userID > 0)
+    if(filter.userID != null)
     {
+      if(filter.userID <= 0)
+      {
+        throw new Error('Invalid user ID entered');
+      }
       qb.andWhere(`recipe.userID = :userID`, {userID: `${filter.userID}`});
     }
 
@@ -114,6 +118,10 @@ export class RecipeService implements IRecipeService{
     }
     const recipe: RecipeEntity = await qb.getOne();
     if(recipe == null || recipe == undefined){throw new Error('Error loading this recipe')}
+
+    recipe.user.salt = '';
+    recipe.user.password = '';
+
     return JSON.parse(JSON.stringify(recipe));
   }
 
