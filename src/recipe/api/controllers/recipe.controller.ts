@@ -25,6 +25,8 @@ import { RecipeDeleteDto } from '../dtos/recipe.delete.dto';
 @Controller('recipe')
 export class RecipeController {
 
+  @WebSocketServer() server;
+
   constructor(@Inject(IUserServiceProvider) private userService: IUserService, @Inject(IRecipeServiceProvider) private recipeService: IRecipeService) {}
 
   @UseGuards(JwtAuthGuard)
@@ -40,6 +42,7 @@ export class RecipeController {
       }
 
       const addedRecipe = await this.recipeService.createRecipe(recipe);
+
 
       return addedRecipe;
     }

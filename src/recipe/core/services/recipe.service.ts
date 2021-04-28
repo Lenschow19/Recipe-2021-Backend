@@ -53,7 +53,7 @@ export class RecipeService implements IRecipeService{
       qb.andWhere(`recipe.userID = :userID`, {userID: `${filter.userID}`});
     }
 
-    if(filter.sorting != null && filter.sorting === 'asc')
+    if(filter.sorting != null && filter.sorting === 'ASC')
     {
       if(filter.sortingType != null && filter.sortingType === 'ALF')
       {
@@ -65,7 +65,7 @@ export class RecipeService implements IRecipeService{
       }
     }
 
-    else if(filter.sorting != null && filter.sorting === 'desc')
+    else if(filter.sorting != null && filter.sorting === 'DESC')
     {
       if(filter.sortingType != null && filter.sortingType === 'ALF')
       {

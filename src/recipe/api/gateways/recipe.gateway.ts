@@ -21,10 +21,4 @@ export class RecipeGateway {
   async handleCreateEvent(@MessageBody() recipe: Recipe) {
     this.server.emit('recipeCreated', recipe);
   }
-
-  // @SubscribeMessage('joinDetailsRoom')
-  // async joinDetailsRoom(@MessageBody() listenDetailsDTO: ListenDetailsDto, @ConnectedSocket() client: Socket) {
-  //   client.leaveAll();
-  //   client.join(`${listenDetailsDTO.room}${listenDetailsDTO.ID}`);
-  // }
 }
