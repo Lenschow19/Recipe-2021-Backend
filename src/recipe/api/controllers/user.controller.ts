@@ -29,7 +29,7 @@ export class UserController {
 
     try
     {
-      const foundUser: User = await this.userService.login(loginDto);
+      const foundUser: User = await this.userService.login(loginDto.username, loginDto.password);
 
       if(foundUser == null ||foundUser == undefined){
         throw new HttpException('Error loading user', HttpStatus.BAD_REQUEST);
@@ -51,7 +51,7 @@ export class UserController {
 
     try
     {
-      let createdUser: User = this.userService.createUser(loginDto);
+      let createdUser: User = this.userService.createUser(loginDto.username, loginDto.password);
       let addedUser: User = await this.userService.addUser(createdUser);
 
       if(addedUser == null || addedUser == undefined){

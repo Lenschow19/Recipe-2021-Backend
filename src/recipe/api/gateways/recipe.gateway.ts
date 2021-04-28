@@ -25,16 +25,4 @@ export class RecipeGateway implements OnGatewayInit{
   afterInit(server: Server){
     this.socketService.setServer(server);
   }
-
-  // @SubscribeMessage('updateRecipe')
-  // async handleUpdateEvent(@MessageBody() recipe: Recipe) {
-  //   this.server.emit('recipeUpdated', recipe);
-  // }
-
-  // @SubscribeMessage('createRecipe')
-  // async handleCreateEvent(@MessageBody() recipe: Recipe) {
-  //   this.server.emit('recipeCreated', recipe);
-  // }
-
-
 }

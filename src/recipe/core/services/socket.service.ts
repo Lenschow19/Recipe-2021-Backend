@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { ISocketService } from '../primary-ports/socket.service.interface';
-import { MessageBody, SubscribeMessage } from '@nestjs/websockets';
 import { Recipe } from '../models/recipe';
 
 @Injectable()
@@ -21,6 +20,10 @@ export class SocketService implements ISocketService{
 
   emitRecipeCreateEvent(recipe: Recipe) {
     this.server.emit('recipeCreated', recipe);
+  }
+
+  emitRecipeDeleteEvent(recipe: Recipe) {
+    this.server.emit('recipeDeleted', recipe);
   }
 
 }

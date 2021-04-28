@@ -27,9 +27,9 @@ export class AuthenticationHelper {
     return crypto.randomBytes(saltLength).toString('hex').slice(0, saltLength);
   }
 
-  validateLogin(userToValidate: User, loginDTO: LoginDto): void{
+  validateLogin(userToValidate: User, password: string): void{
 
-    let hashedPassword: string = this.generateHash(loginDTO.password, userToValidate.salt);
+    let hashedPassword: string = this.generateHash(password, userToValidate.salt);
     let storedPassword: string = userToValidate.password;
 
     if(storedPassword !== hashedPassword){
@@ -43,10 +43,10 @@ export class AuthenticationHelper {
     return this.jwtService.sign(payload, options);
   }
 
-  validateJWTToken(token: string): LoginResponseDto{
+  validateJWTToken(token: string): string{
     const options: JwtSignOptions = {secret: this.secretKey, algorithm: 'HS256'}
     this.jwtService.verify(token, options);
-    return {token: token};
+    return token;
   }
 
 }

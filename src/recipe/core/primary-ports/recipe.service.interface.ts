@@ -11,8 +11,8 @@ export interface IRecipeService{
   createRecipe(recipe: Recipe): Promise<Recipe>
   getRecipes(filter: Filter): Promise<FilterList<Recipe>>
   getRecipeCategories(): Promise<Category>
-  getRecipeById(recipeGetDTO: RecipeGetDto): Promise<Recipe>
+  getRecipeById(recipeID: number, userID?: number): Promise<Recipe>
   updateRecipe(recipe: Recipe): Promise<Recipe>
-  deleteRecipe(recipeDeleteDTO: RecipeDeleteDto): Promise<boolean>
+  deleteRecipe(recipeID: number, userID: number): Promise<boolean>
 
 }

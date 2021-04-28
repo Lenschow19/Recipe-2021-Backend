@@ -73,7 +73,7 @@ export class RecipeController {
   async getPersonalByID(@MessageBody() recipeGetDTO: RecipeGetDto){
     try
     {
-      return await this.recipeService.getRecipeById(recipeGetDTO);
+      return await this.recipeService.getRecipeById(recipeGetDTO.recipeID, recipeGetDTO.userID);
     }
     catch (e) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.NOT_FOUND);}
   }
@@ -82,7 +82,7 @@ export class RecipeController {
   async getByID(@MessageBody() recipeGetDTO: RecipeGetDto){
     try
     {
-      return await this.recipeService.getRecipeById(recipeGetDTO);
+      return await this.recipeService.getRecipeById(recipeGetDTO.recipeID);
     }
     catch (e) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.NOT_FOUND);}
   }
@@ -107,13 +107,13 @@ export class RecipeController {
   async deleteRecipe(@MessageBody() recipeDeleteDTO: RecipeDeleteDto){
     try
     {
-      const deleted = await this.recipeService.deleteRecipe(recipeDeleteDTO);
-      if(!deleted){throw new Error('Error deleting recipe with ID ' + recipeDeleteDTO.recipeID)}
+      const deleted = await this.recipeService.deleteRecipe(recipeDeleteDTO.recipe.ID, recipeDeleteDTO.userID);
+      if(!deleted){throw new Error('Error deleting recipe with ID ' + recipeDeleteDTO.recipe.ID)}
+      this.socketService.emitRecipeDeleteEvent(recipeDeleteDTO.recipe);
       return deleted;
     }
     catch (e)
     {
-      console.log(e.message);
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

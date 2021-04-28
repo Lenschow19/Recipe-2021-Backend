@@ -89,9 +89,9 @@ export class RecipeService implements IRecipeService{
     return JSON.parse(JSON.stringify(categories));
   }
 
-  async getRecipeById(recipeGetDTO: RecipeGetDto): Promise<Recipe> {
+  async getRecipeById(recipeID: number, userID?: number): Promise<Recipe> {
 
-    if(recipeGetDTO.recipeID <= 0)
+    if(recipeID <= 0)
     {
       throw new Error('Incorrect recipe ID entered');
     }
@@ -100,16 +100,16 @@ export class RecipeService implements IRecipeService{
     qb.leftJoinAndSelect('recipe.user', 'user');
     qb.leftJoinAndSelect('recipe.ingredientEntries', 'ingredientEntries');
     qb.leftJoinAndSelect('recipe.category', 'category');
-    qb.andWhere(`recipe.ID = :RecipeID`, { RecipeID: `${recipeGetDTO.recipeID}`});
+    qb.andWhere(`recipe.ID = :RecipeID`, { RecipeID: `${recipeID}`});
 
-    if(recipeGetDTO.userID !== undefined)
+    if(userID !== undefined)
     {
-      if(recipeGetDTO.userID <= 0)
+      if(userID <= 0)
       {
         throw new Error('Incorrect user ID entered');
       }
 
-      qb.andWhere(`user.ID = :UserID`, { UserID: `${recipeGetDTO.userID}`});
+      qb.andWhere(`user.ID = :UserID`, { UserID: `${userID}`});
 
     }
     const recipe: RecipeEntity = await qb.getOne();
@@ -165,11 +165,11 @@ export class RecipeService implements IRecipeService{
     }
   }
 
-  async deleteRecipe(recipeDeleteDTO: RecipeDeleteDto): Promise<boolean> {
+  async deleteRecipe(recipeID: number, userID: number): Promise<boolean> {
 
     const recipe = await this.recipeRepository.createQueryBuilder().delete()
-      .where("ID = :recipeID", { recipeID: `${recipeDeleteDTO.recipeID}`})
-      .andWhere("userID = :userID", {userID: `${recipeDeleteDTO.userID}`})
+      .where("ID = :recipeID", { recipeID: `${recipeID}`})
+      .andWhere("userID = :userID", {userID: `${userID}`})
       .execute();
 
     if(recipe.affected){return true;}

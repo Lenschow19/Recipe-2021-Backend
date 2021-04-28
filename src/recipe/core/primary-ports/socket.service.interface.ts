@@ -7,5 +7,6 @@ export interface ISocketService{
   setServer(socket: Server)
   emitRecipeUpdateEvent(recipe: Recipe)
   emitRecipeCreateEvent(recipe: Recipe)
+  emitRecipeDeleteEvent(recipe: Recipe)
 
 }

@@ -3,14 +3,10 @@ import { IUserService } from '../primary-ports/user.service.interface';
 import { AuthenticationHelper } from '../../../auth/authentication.helper';
 import { LoginDto } from '../../api/dtos/login.dto';
 import { User } from '../models/user';
-import { log } from 'util';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../infrastructure/data-source/postgres/entities/user.entity';
 import { Repository } from 'typeorm';
 import { LoginResponseDto } from '../../api/dtos/login.response.dto';
-import { RecipeGetDto } from '../../api/dtos/recipe.get.dto';
-import { Recipe } from '../models/recipe';
-import { RecipeEntity } from '../../infrastructure/data-source/postgres/entities/recipe.entity';
 
 @Injectable()
 export class UserService implements IUserService{
@@ -25,34 +21,34 @@ export class UserService implements IUserService{
     return this.authenticationHelper.generateHash(password, salt);
   }
 
-  async login(loginDTO: LoginDto): Promise<User>{
+  async login(username: string, password: string): Promise<User>{
 
-    if(loginDTO == null || loginDTO.username == null || loginDTO.password == null){
+    if(username == null || password == null){
       throw new Error('Username or Password is non-existing');
     }
 
-    let foundUser: User = await this.userRepository.findOne({where: `"username" ILIKE '${loginDTO.username}'`})
+    let foundUser: User = await this.userRepository.findOne({where: `"username" ILIKE '${username}'`})
 
     if(foundUser == null){
       throw new Error('No user registered with such a name');
     }
 
-    this.authenticationHelper.validateLogin(foundUser, loginDTO);
+    this.authenticationHelper.validateLogin(foundUser, password);
     return foundUser;
   }
 
-  createUser(loginDTO: LoginDto): User {
+  createUser(username: string, password: string): User {
 
-    if(loginDTO.username == null || loginDTO.username.length < 8 || loginDTO.username.length > 24){
+    if(username == null || username.length < 8 || username.length > 24){
       throw new Error('Username must be between 8-24 characters');
     }
-    if(loginDTO.password == null || loginDTO.password.length < 8){
+    if(password == null || password.length < 8){
       throw new Error('Password must be minimum 8 characters long');
     }
 
     let salt: string = this.authenticationHelper.generateSalt();
-    let hashedPassword: string = this.authenticationHelper.generateHash(loginDTO.password, salt);
-    return {ID: 0, username: loginDTO.username, password: hashedPassword, salt: salt};
+    let hashedPassword: string = this.authenticationHelper.generateHash(password, salt);
+    return {ID: 0, username: username, password: hashedPassword, salt: salt};
 
   }
 
@@ -81,7 +77,7 @@ export class UserService implements IUserService{
     return this.authenticationHelper.generateJWTToken(user);
   }
 
-  verifyJWTToken(token: string): LoginResponseDto{
+  verifyJWTToken(token: string): string{
     try{return this.authenticationHelper.validateJWTToken(token);}
     catch (e) {throw new Error('Invalid signature');}
   }
@@ -111,7 +107,7 @@ export class UserService implements IUserService{
 
     const user: User = await this.getUserById(userID);
 
-    this.authenticationHelper.validateLogin(user, {username: user.username, password: oldPassword})
+    this.authenticationHelper.validateLogin(user, oldPassword);
     user.salt = this.authenticationHelper.generateSalt();
     user.password = this.authenticationHelper.generateHash(password, user.salt);
 
