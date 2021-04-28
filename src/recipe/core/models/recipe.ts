@@ -11,4 +11,7 @@ export interface Recipe {
   imageURL: string
   category: Category
   user?: User
+
+  averageRating: number
+  personalRating: number
 }

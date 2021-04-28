@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from
 import { IngredientEntryEntity } from './ingredient-entry.entity';
 import { IngredientEntry } from '../../../../core/models/ingredient-entry';
 import { RecipeEntity } from './recipe.entity';
+import { RatingEntity } from './rating.entity';
 
 @Entity()
 export class UserEntity {
@@ -20,5 +21,8 @@ export class UserEntity {
 
   @OneToMany(() => RecipeEntity, (recipeEntity: RecipeEntity) => recipeEntity.user)
   public recipes?: RecipeEntity[]
+
+  @OneToMany(() => RatingEntity, (ratingEntity: RatingEntity) => ratingEntity.user, {cascade: true})
+  public ratings?: RatingEntity[]
 
 }

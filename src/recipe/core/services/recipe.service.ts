@@ -11,13 +11,16 @@ import { Category } from '../models/category';
 import { CategoryEntity } from '../../infrastructure/data-source/postgres/entities/category.entity';
 import { RecipeGetDto } from '../../api/dtos/recipe.get.dto';
 import { RecipeDeleteDto } from '../../api/dtos/recipe.delete.dto';
+import { Rating } from '../models/rating';
+import { RatingEntity } from '../../infrastructure/data-source/postgres/entities/rating.entity';
 
 @Injectable()
 export class RecipeService implements IRecipeService{
 
   constructor(@InjectRepository(RecipeEntity) private recipeRepository: Repository<RecipeEntity>,
               @InjectRepository(IngredientEntryEntity) private ingredientRepository: Repository<IngredientEntryEntity>,
-              @InjectRepository(CategoryEntity) private categoryRepository: Repository<CategoryEntity>){}
+              @InjectRepository(CategoryEntity) private categoryRepository: Repository<CategoryEntity>,
+              @InjectRepository(RatingEntity) private ratingRepository: Repository<RatingEntity>){}
 
   async createRecipe(recipe: Recipe): Promise<Recipe> {
 
@@ -31,12 +34,16 @@ export class RecipeService implements IRecipeService{
 
     if(newRecipe == null || newRecipe == undefined){throw new Error('Error saving recipe')}
 
-    return JSON.parse(JSON.stringify(newRecipe));
+    const createdRecipe: Recipe = JSON.parse(JSON.stringify(newRecipe));
+    createdRecipe.averageRating = 0;
+    return createdRecipe;
   }
 
   async getRecipes(filter: Filter): Promise<FilterList<Recipe>> {
 
     let qb = this.recipeRepository.createQueryBuilder("recipe");
+    qb.leftJoin('recipe.ratings', 'ratings');
+    qb.addSelect('CAST(CAST(SUM(ratings.rating) AS DOUBLE PRECISION)/CAST(COUNT(ratings.rating) AS DOUBLE PRECISION) AS NUMERIC(5,2))', 'average_rating').groupBy('recipe.ID');
 
     if(filter.name != null && filter.name !== '')
     {
@@ -50,42 +57,41 @@ export class RecipeService implements IRecipeService{
 
     if(filter.userID != null)
     {
-      if(filter.userID <= 0)
-      {
-        throw new Error('Invalid user ID entered');
-      }
+      if(filter.userID <= 0) {throw new Error('Invalid user ID entered');}
       qb.andWhere(`recipe.userID = :userID`, {userID: `${filter.userID}`});
     }
 
-    if(filter.sorting != null && filter.sorting === 'ASC')
+    if(filter.sorting != null && filter.sorting === 'ASC' || filter.sorting != null && filter.sorting === 'DESC')
     {
       if(filter.sortingType != null && filter.sortingType === 'ALF')
       {
-        qb.orderBy("recipe.title", "ASC");
+        qb.orderBy('recipe.title', filter.sorting);
       }
       if(filter.sortingType != null && filter.sortingType === 'ADDED')
       {
-        qb.orderBy("recipe.ID", "ASC");
+        qb.orderBy('recipe.ID', filter.sorting);
+      }
+      if(filter.sortingType != null && filter.sortingType === 'RATING' && filter.sorting === 'ASC')
+      {
+        qb.orderBy('average_rating', 'ASC', 'NULLS FIRST');
+      }
+      if(filter.sortingType != null && filter.sortingType === 'RATING' && filter.sorting === 'DESC')
+      {
+        qb.orderBy('average_rating', 'DESC', 'NULLS LAST');
       }
     }
 
-    else if(filter.sorting != null && filter.sorting === 'DESC')
-    {
-      if(filter.sortingType != null && filter.sortingType === 'ALF')
-      {
-        qb.orderBy("recipe.title", "DESC");
-      }
-      if(filter.sortingType != null && filter.sortingType === 'ADDED')
-      {
-        qb.orderBy("recipe.ID", "DESC");
-      }
-    }
+    qb.offset((filter.currentPage - 1) * filter.itemsPrPage);
+    qb.limit(filter.itemsPrPage);
 
-    qb.take(filter.itemsPrPage);
-    qb.skip((filter.currentPage - 1) * filter.itemsPrPage);
-    const [result, total] = await qb.getManyAndCount();
-    let recipeList: FilterList<Recipe> = {totalItems: total, list: JSON.parse(JSON.stringify(result))}
-    return recipeList;
+    const result = await qb.getRawMany();
+    const count = await qb.getCount();
+
+    const resultConverted: Recipe[] = result.map((recipeEntityRaw) => {return {ID: recipeEntityRaw.recipe_ID, title: recipeEntityRaw.recipe_title, description: recipeEntityRaw.recipe_description,
+      preparations: recipeEntityRaw.recipe_preparations, imageURL: recipeEntityRaw.recipe_imageURL, averageRating: (recipeEntityRaw.average_rating != null) ? recipeEntityRaw.average_rating : 0, category: null, ingredientEntries: null, user: null, personalRating: 0}});
+
+    const filterList: FilterList<Recipe> = {list: resultConverted, totalItems: count};
+    return filterList;
   }
 
   async getRecipeCategories(): Promise<Category>{
@@ -93,7 +99,7 @@ export class RecipeService implements IRecipeService{
     return JSON.parse(JSON.stringify(categories));
   }
 
-  async getRecipeById(recipeID: number, userID?: number): Promise<Recipe> {
+  async getRecipeById(recipeID: number, userIDOwner?: number, userIDRating?: number): Promise<Recipe> {
 
     if(recipeID <= 0)
     {
@@ -106,23 +112,46 @@ export class RecipeService implements IRecipeService{
     qb.leftJoinAndSelect('recipe.category', 'category');
     qb.andWhere(`recipe.ID = :RecipeID`, { RecipeID: `${recipeID}`});
 
-    if(userID !== undefined)
+    if(userIDOwner !== undefined && userIDOwner !== null)
     {
-      if(userID <= 0)
+      if(userIDOwner <= 0)
       {
         throw new Error('Incorrect user ID entered');
       }
 
-      qb.andWhere(`user.ID = :UserID`, { UserID: `${userID}`});
-
+      qb.andWhere(`user.ID = :UserID`, { UserID: `${userIDOwner}`});
     }
-    const recipe: RecipeEntity = await qb.getOne();
-    if(recipe == null || recipe == undefined){throw new Error('Error loading this recipe')}
 
+    const recipe: RecipeEntity = await qb.getOne();
     recipe.user.salt = '';
     recipe.user.password = '';
+    if(recipe == null || recipe == undefined){throw new Error('Error loading this recipe');}
 
-    return JSON.parse(JSON.stringify(recipe));
+    const recipeConverted: Recipe = JSON.parse(JSON.stringify(recipe));
+
+    const averageRating = await this.ratingRepository.createQueryBuilder('rating')
+      .select('CAST(SUM(rating.rating) AS DOUBLE PRECISION)/CAST(COUNT(rating) AS DOUBLE PRECISION)', 'average_rating').where('rating.recipeID = :recipeID', {recipeID: `${recipeID}`})
+      .getRawOne();
+
+
+
+    recipeConverted.averageRating = (averageRating.average_rating != null) ? averageRating.average_rating : 0;
+
+    if(userIDRating !== undefined && userIDRating !== null)
+    {
+      if(userIDRating <= 0)
+      {
+        throw new Error('Incorrect user ID entered');
+      }
+
+      const userRating = await this.ratingRepository.createQueryBuilder('rating')
+        .select('rating.rating', 'user_rating').where('rating.userID = :userID AND rating.recipeID = :recipeID', {userID: `${userIDRating}`, recipeID: `${recipeID}`})
+        .getRawOne();
+
+      recipeConverted.personalRating = (userRating != null && userRating != undefined) ? userRating.user_rating : 0;
+    }
+
+    return recipeConverted;
   }
 
   async updateRecipe(recipe: Recipe): Promise<Recipe> {
@@ -182,6 +211,14 @@ export class RecipeService implements IRecipeService{
 
     if(recipe.affected){return true;}
     return false;
+  }
+
+  async createRating(rating: Rating): Promise<Recipe> {
+    const ratingEntity = this.ratingRepository.create(rating);
+    ratingEntity.user = JSON.parse(JSON.stringify({ID: rating.userID}));
+    ratingEntity.recipe = JSON.parse(JSON.stringify({ID: rating.recipeID}));
+    await this.ratingRepository.save(ratingEntity);
+    return this.getRecipeById(rating.recipeID);
   }
 
 }

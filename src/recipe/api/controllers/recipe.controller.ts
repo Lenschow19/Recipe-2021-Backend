@@ -22,6 +22,7 @@ import { query } from 'express';
 import { RecipeGetDto } from '../dtos/recipe.get.dto';
 import { RecipeDeleteDto } from '../dtos/recipe.delete.dto';
 import { ISocketService, ISocketServiceProvider } from '../../core/primary-ports/socket.service.interface';
+import { Rating } from '../../core/models/rating';
 
 @Controller('recipe')
 export class RecipeController {
@@ -56,7 +57,7 @@ export class RecipeController {
   async getRecipes(@Query() filter: Filter){
 
     try{return await this.recipeService.getRecipes(filter);}
-    catch (e) {throw new HttpException(e.message, HttpStatus.BAD_REQUEST);}
+    catch (e) {console.log(e.message);throw new HttpException(e.message, HttpStatus.BAD_REQUEST);}
 
 
   }
@@ -77,7 +78,7 @@ export class RecipeController {
   async getPersonalByID(@MessageBody() recipeGetDTO: RecipeGetDto){
     try
     {
-      return await this.recipeService.getRecipeById(recipeGetDTO.recipeID, recipeGetDTO.userID);
+      return await this.recipeService.getRecipeById(recipeGetDTO.recipeID, recipeGetDTO.userID, recipeGetDTO.userIDRating);
     }
     catch (e) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.NOT_FOUND);}
   }
@@ -86,7 +87,7 @@ export class RecipeController {
   async getByID(@MessageBody() recipeGetDTO: RecipeGetDto){
     try
     {
-      return await this.recipeService.getRecipeById(recipeGetDTO.recipeID);
+      return await this.recipeService.getRecipeById(recipeGetDTO.recipeID, recipeGetDTO.userID, recipeGetDTO.userIDRating);
     }
     catch (e) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.NOT_FOUND);}
   }
@@ -119,6 +120,21 @@ export class RecipeController {
     catch (e)
     {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('giveRating')
+  async giveRating(@MessageBody() rating: Rating){
+    try
+    {
+      const recipe: Recipe = await this.recipeService.createRating(rating);
+      this.socketService.emitRecipeRatingUpdateEvent(recipe, rating);
+      return recipe;
+    }
+    catch (e)
+    {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
   }
 
