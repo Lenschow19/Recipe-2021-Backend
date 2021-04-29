@@ -41,7 +41,10 @@ export class RecipeService implements IRecipeService{
 
     let qb = this.recipeRepository.createQueryBuilder("recipe");
     qb.leftJoin('recipe.ratings', 'ratings');
-    qb.addSelect('CAST(CAST(SUM(ratings.rating) AS DOUBLE PRECISION)/CAST(COUNT(ratings.rating) AS DOUBLE PRECISION) AS NUMERIC(5,1))', 'average_rating').groupBy('recipe.ID');
+    qb.addSelect('COALESCE(CAST(CAST(SUM(ratings.rating) AS DOUBLE PRECISION)/CAST(COUNT(ratings.rating) AS DOUBLE PRECISION) AS NUMERIC(5,1)),0)', 'average_rating').groupBy('recipe.ID');
+
+    // qb.leftJoinAndSelect('recipe.favorites', 'favorite').addGroupBy('favorites.userID, favorites.recipeID');
+
 
     if(filter.name != null && filter.name !== '')
     {
@@ -86,7 +89,7 @@ export class RecipeService implements IRecipeService{
     const count = await qb.getCount();
 
     const resultConverted: Recipe[] = result.map((recipeEntityRaw) => {return {ID: recipeEntityRaw.recipe_ID, title: recipeEntityRaw.recipe_title, description: recipeEntityRaw.recipe_description,
-      preparations: recipeEntityRaw.recipe_preparations, imageURL: recipeEntityRaw.recipe_imageURL, averageRating: (recipeEntityRaw.average_rating != null) ? recipeEntityRaw.average_rating : 0, category: null, ingredientEntries: null, user: null, personalRating: 0}});
+      preparations: recipeEntityRaw.recipe_preparations, imageURL: recipeEntityRaw.recipe_imageURL, averageRating: recipeEntityRaw.average_rating, category: null, ingredientEntries: null, user: null, personalRating: 0, isFavorite: false}});
 
     const filterList: FilterList<Recipe> = {list: resultConverted, totalItems: count};
     return filterList;
@@ -123,10 +126,10 @@ export class RecipeService implements IRecipeService{
     const recipeConverted: Recipe = JSON.parse(JSON.stringify(recipe));
 
     const averageRating = await this.ratingRepository.createQueryBuilder('rating')
-      .select('CAST(CAST(SUM(rating.rating) AS DOUBLE PRECISION)/CAST(COUNT(rating) AS DOUBLE PRECISION) AS NUMERIC(5,1))', 'average_rating').where('rating.recipeID = :recipeID', {recipeID: `${recipeID}`})
+      .select('COALESCE(CAST(CAST(SUM(rating.rating) AS DOUBLE PRECISION)/CAST(COUNT(rating) AS DOUBLE PRECISION) AS NUMERIC(5,1)),0)', 'average_rating').where('rating.recipeID = :recipeID', {recipeID: `${recipeID}`})
       .getRawOne();
 
-    recipeConverted.averageRating = (averageRating.average_rating != null) ? averageRating.average_rating : 0;
+    recipeConverted.averageRating = averageRating.average_rating;
 
     if(userIDRating !== undefined && userIDRating !== null)
     {

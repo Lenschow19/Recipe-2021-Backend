@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { RecipeEntity } from './recipe.entity';
 import { RatingEntity } from './rating.entity';
+import { FavoriteEntity } from './favorite.entity';
 
 @Entity()
 export class UserEntity {
@@ -22,5 +23,8 @@ export class UserEntity {
 
   @OneToMany(() => RatingEntity, (ratingEntity: RatingEntity) => ratingEntity.user, {cascade: true})
   public ratings?: RatingEntity[]
+
+  @OneToMany(() => FavoriteEntity, (favoriteEntity: FavoriteEntity) => favoriteEntity.user, {cascade: true})
+  public favorites?: FavoriteEntity[]
 
 }

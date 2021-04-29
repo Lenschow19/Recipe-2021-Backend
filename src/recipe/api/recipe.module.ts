@@ -9,9 +9,10 @@ import { IngredientEntryEntity } from '../infrastructure/data-source/postgres/en
 import { CategoryEntity } from '../infrastructure/data-source/postgres/entities/category.entity';
 import { SocketModule } from './socket.module';
 import { RatingEntity } from '../infrastructure/data-source/postgres/entities/rating.entity';
+import { FavoriteEntity } from '../infrastructure/data-source/postgres/entities/favorite.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RecipeEntity, IngredientEntryEntity, CategoryEntity, RatingEntity]), UserModule, SocketModule, ],
+  imports: [TypeOrmModule.forFeature([RecipeEntity, IngredientEntryEntity, CategoryEntity, RatingEntity, FavoriteEntity]), UserModule, SocketModule, ],
   providers: [{provide: IRecipeServiceProvider, useClass: RecipeService}],
   controllers: [RecipeController],
   exports: [IRecipeServiceProvider]

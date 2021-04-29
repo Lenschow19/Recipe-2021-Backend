@@ -14,4 +14,5 @@ export interface Recipe {
 
   averageRating: number
   personalRating: number
+  isFavorite: boolean
 }

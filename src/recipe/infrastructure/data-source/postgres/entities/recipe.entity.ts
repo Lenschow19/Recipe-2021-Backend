@@ -4,6 +4,7 @@ import { IngredientEntryEntity } from './ingredient-entry.entity';
 import { UserEntity } from './user.entity';
 import { CategoryEntity } from './category.entity';
 import { RatingEntity } from './rating.entity';
+import { FavoriteEntity } from './favorite.entity';
 
 @Entity()
 export class RecipeEntity {
@@ -28,6 +29,9 @@ export class RecipeEntity {
 
   @OneToMany(() => RatingEntity, (ratingEntity: RatingEntity) => ratingEntity.recipe, {cascade: true})
   public ratings?: RatingEntity[]
+
+  @OneToMany(() => FavoriteEntity, (favoriteEntity: FavoriteEntity) => favoriteEntity.recipe, {cascade: true})
+  public favorites?: FavoriteEntity[]
 
   @Index()
   @ManyToOne(() => UserEntity, (user: UserEntity) => user.recipes)
