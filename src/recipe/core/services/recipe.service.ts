@@ -45,12 +45,6 @@ export class RecipeService implements IRecipeService{
     qb.leftJoin('recipe.ratings', 'ratings');
     qb.addSelect('COALESCE(CAST(CAST(SUM(ratings.rating) AS DOUBLE PRECISION)/CAST(COUNT(ratings.rating) AS DOUBLE PRECISION) AS NUMERIC(5,1)),0)', 'average_rating').groupBy('recipe.ID');
 
-    //qb.leftJoinAndSelect(qb => qb.select("favorite.isFavorite, favorite.recipeID, favorite.userID").from(FavoriteEntity, 'favorite').where('favorite.userID = :userIDFavorite', {userIDFavorite: `${filter.userIDFavorite}`}), 'favorites', '"favorites"."recipeID" = recipe.ID').addGroupBy('"favorites"."recipeID", "favorites"."userID", "favorites"."isFavorite"');
-    //qb.leftJoin(qb => qb.select("favorite.isFavorite, favorite.recipeID, favorite.userID").from(FavoriteEntity, 'favorite').where('favorite.userID = :userIDFavorite', {userIDFavorite: `${filter.userIDFavorite}`}), 'favorites', '"favorites"."recipeID" = recipe.ID').addGroupBy('"favorites"."recipeID", "favorites"."userID", "favorites"."isFavorite"');
-
-    //qb.addSelect('COALESCE("isFavorite", false)', 'isFavorite');
-
-
     if(filter.name != null && filter.name !== '')
     {
       qb.andWhere(`title ILIKE :name`, { name: `%${filter.name}%` });
@@ -65,6 +59,13 @@ export class RecipeService implements IRecipeService{
     {
       if(filter.userID <= 0) {throw new Error('Invalid user ID entered');}
       qb.andWhere(`recipe.userID = :userID`, {userID: `${filter.userID}`});
+    }
+
+    if(filter.userIDFavorite != null)
+    {
+      if(filter.userIDFavorite <= 0){throw new Error('Invalid user ID entered');}
+      qb.leftJoin(qb => qb.select("favorite.isFavorite, favorite.recipeID, favorite.userID").from(FavoriteEntity, 'favorite').where('favorite.userID = :userIDFavorite', {userIDFavorite: `${filter.userIDFavorite}`}), 'favorites', '"favorites"."recipeID" = recipe.ID').addGroupBy('"favorites"."recipeID", "favorites"."userID", "favorites"."isFavorite"');
+      qb.addSelect('COALESCE("isFavorite", false)', 'isFavorite');
     }
 
     if(filter.sorting != null && filter.sorting === 'ASC' || filter.sorting != null && filter.sorting === 'DESC')
@@ -94,10 +95,8 @@ export class RecipeService implements IRecipeService{
     const result = await qb.getRawMany();
     const count = await qb.getCount();
 
-    console.log(result);
-
     const resultConverted: Recipe[] = result.map((recipeEntityRaw) => {return {ID: recipeEntityRaw.recipe_ID, title: recipeEntityRaw.recipe_title, description: recipeEntityRaw.recipe_description,
-      preparations: recipeEntityRaw.recipe_preparations, imageURL: recipeEntityRaw.recipe_imageURL, averageRating: recipeEntityRaw.average_rating, category: null, ingredientEntries: null, user: null, personalRating: 0, isFavorite: false}});
+      preparations: recipeEntityRaw.recipe_preparations, imageURL: recipeEntityRaw.recipe_imageURL, averageRating: recipeEntityRaw.average_rating, category: null, ingredientEntries: null, user: null, personalRating: 0, isFavorite: (recipeEntityRaw.isFavorite != null) ? recipeEntityRaw.isFavorite : false}});
 
     const filterList: FilterList<Recipe> = {list: resultConverted, totalItems: count};
     return filterList;
@@ -112,9 +111,12 @@ export class RecipeService implements IRecipeService{
 
     let qb = this.recipeRepository.createQueryBuilder("recipe");
     qb.leftJoinAndSelect('recipe.user', 'user');
-    qb.leftJoinAndSelect('recipe.ingredientEntries', 'ingredientEntries');
-    qb.leftJoinAndSelect('recipe.category', 'category');
+    qb.leftJoinAndSelect('recipe.ingredientEntries', 'ingredientEntries')
+    qb.leftJoinAndSelect('recipe.category', 'category')
+    qb.leftJoin('recipe.ratings', 'ratings');
+    qb.addSelect('COALESCE(CAST(CAST(SUM(ratings.rating) AS DOUBLE PRECISION)/CAST(COUNT(ratings.rating) AS DOUBLE PRECISION) AS NUMERIC(5,1)),0)', 'average_rating')
     qb.andWhere(`recipe.ID = :RecipeID`, { RecipeID: `${recipeID}`});
+    qb.addGroupBy('user.ID, ingredientEntries.ID, category.ID, recipe.ID')
 
     if(userIDOwner !== undefined && userIDOwner !== null)
     {
@@ -126,18 +128,23 @@ export class RecipeService implements IRecipeService{
       qb.andWhere(`user.ID = :UserID`, { UserID: `${userIDOwner}`});
     }
 
+    if(userIDRating !== undefined && userIDRating !== null)
+    {
+      if(userIDRating <= 0) {throw new Error('Incorrect user ID entered');}
+
+      qb.leftJoin(qb => qb.select("favorite.isFavorite, favorite.recipeID, favorite.userID").from(FavoriteEntity, 'favorite').where('favorite.userID = :userIDFavorite', {userIDFavorite: `${userIDRating}`}), 'favorites', '"favorites"."recipeID" = recipe.ID').addGroupBy('"favorites"."recipeID", "favorites"."userID", "favorites"."isFavorite"');
+      qb.addSelect('COALESCE("isFavorite", false)', 'isFavorite');
+    }
+
     const recipe: RecipeEntity = await qb.getOne();
-    recipe.user.salt = '';
-    recipe.user.password = '';
     if(recipe == null || recipe == undefined){throw new Error('Error loading this recipe');}
-
     const recipeConverted: Recipe = JSON.parse(JSON.stringify(recipe));
+    const recipeRaw: any = await qb.getRawOne();
 
-    const averageRating = await this.ratingRepository.createQueryBuilder('rating')
-      .select('COALESCE(CAST(CAST(SUM(rating.rating) AS DOUBLE PRECISION)/CAST(COUNT(rating) AS DOUBLE PRECISION) AS NUMERIC(5,1)),0)', 'average_rating').where('rating.recipeID = :recipeID', {recipeID: `${recipeID}`})
-      .getRawOne();
-
-    recipeConverted.averageRating = averageRating.average_rating;
+    recipeConverted.user.salt = '';
+    recipeConverted.user.password = '';
+    recipeConverted.isFavorite = (recipeRaw.isFavorite != null) ? recipeRaw.isFavorite : false;
+    recipeConverted.averageRating = recipeRaw.average_rating;
 
     if(userIDRating !== undefined && userIDRating !== null)
     {

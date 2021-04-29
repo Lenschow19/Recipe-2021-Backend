@@ -79,7 +79,7 @@ export class RecipeController {
     {
       return await this.recipeService.getRecipeById(recipeGetDTO.recipeID, recipeGetDTO.userID, recipeGetDTO.userIDRating);
     }
-    catch (e) {throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.NOT_FOUND);}
+    catch (e) {console.log(e.message);throw new HttpException('Error loading recipe with ID: ' + recipeGetDTO.recipeID, HttpStatus.NOT_FOUND);}
   }
 
   @UseGuards(JwtAuthGuard)
