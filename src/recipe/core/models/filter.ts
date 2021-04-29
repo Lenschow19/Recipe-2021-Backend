@@ -8,5 +8,6 @@ export interface Filter{
   category?: number
 
   userID?: number
+  userIDFavorite?: number
 
 }

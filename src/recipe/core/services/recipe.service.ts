@@ -11,6 +11,7 @@ import { Category } from '../models/category';
 import { CategoryEntity } from '../../infrastructure/data-source/postgres/entities/category.entity';
 import { Rating } from '../models/rating';
 import { RatingEntity } from '../../infrastructure/data-source/postgres/entities/rating.entity';
+import { FavoriteEntity } from '../../infrastructure/data-source/postgres/entities/favorite.entity';
 
 @Injectable()
 export class RecipeService implements IRecipeService{
@@ -18,7 +19,8 @@ export class RecipeService implements IRecipeService{
   constructor(@InjectRepository(RecipeEntity) private recipeRepository: Repository<RecipeEntity>,
               @InjectRepository(IngredientEntryEntity) private ingredientRepository: Repository<IngredientEntryEntity>,
               @InjectRepository(CategoryEntity) private categoryRepository: Repository<CategoryEntity>,
-              @InjectRepository(RatingEntity) private ratingRepository: Repository<RatingEntity>){}
+              @InjectRepository(RatingEntity) private ratingRepository: Repository<RatingEntity>,
+              @InjectRepository(FavoriteEntity) private favoriteRepository: Repository<FavoriteEntity>){}
 
   async createRecipe(recipe: Recipe): Promise<Recipe> {
 
@@ -43,7 +45,10 @@ export class RecipeService implements IRecipeService{
     qb.leftJoin('recipe.ratings', 'ratings');
     qb.addSelect('COALESCE(CAST(CAST(SUM(ratings.rating) AS DOUBLE PRECISION)/CAST(COUNT(ratings.rating) AS DOUBLE PRECISION) AS NUMERIC(5,1)),0)', 'average_rating').groupBy('recipe.ID');
 
-    // qb.leftJoinAndSelect('recipe.favorites', 'favorite').addGroupBy('favorites.userID, favorites.recipeID');
+    //qb.leftJoinAndSelect(qb => qb.select("favorite.isFavorite, favorite.recipeID, favorite.userID").from(FavoriteEntity, 'favorite').where('favorite.userID = :userIDFavorite', {userIDFavorite: `${filter.userIDFavorite}`}), 'favorites', '"favorites"."recipeID" = recipe.ID').addGroupBy('"favorites"."recipeID", "favorites"."userID", "favorites"."isFavorite"');
+    //qb.leftJoin(qb => qb.select("favorite.isFavorite, favorite.recipeID, favorite.userID").from(FavoriteEntity, 'favorite').where('favorite.userID = :userIDFavorite', {userIDFavorite: `${filter.userIDFavorite}`}), 'favorites', '"favorites"."recipeID" = recipe.ID').addGroupBy('"favorites"."recipeID", "favorites"."userID", "favorites"."isFavorite"');
+
+    //qb.addSelect('COALESCE("isFavorite", false)', 'isFavorite');
 
 
     if(filter.name != null && filter.name !== '')
@@ -82,11 +87,14 @@ export class RecipeService implements IRecipeService{
       }
     }
 
+
     qb.offset((filter.currentPage - 1) * filter.itemsPrPage);
     qb.limit(filter.itemsPrPage);
 
     const result = await qb.getRawMany();
     const count = await qb.getCount();
+
+    console.log(result);
 
     const resultConverted: Recipe[] = result.map((recipeEntityRaw) => {return {ID: recipeEntityRaw.recipe_ID, title: recipeEntityRaw.recipe_title, description: recipeEntityRaw.recipe_description,
       preparations: recipeEntityRaw.recipe_preparations, imageURL: recipeEntityRaw.recipe_imageURL, averageRating: recipeEntityRaw.average_rating, category: null, ingredientEntries: null, user: null, personalRating: 0, isFavorite: false}});

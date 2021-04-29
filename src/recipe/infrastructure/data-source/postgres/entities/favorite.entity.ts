@@ -5,6 +5,9 @@ import { UserEntity } from './user.entity';
 @Entity()
 export class FavoriteEntity {
 
+  @Column()
+  public isFavorite: boolean;
+
   @Index()
   @ManyToOne(() => RecipeEntity, (recipe: RecipeEntity) => recipe.ratings, {primary: true, onDelete: "CASCADE"})
   public recipe: RecipeEntity;
