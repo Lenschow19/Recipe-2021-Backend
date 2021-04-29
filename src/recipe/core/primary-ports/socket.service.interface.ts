@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 import { Recipe } from '../models/recipe';
 import { Rating } from '../models/rating';
+import { FavoriteDto } from '../../api/dtos/favorite.dto';
 
 export const ISocketServiceProvider = 'ISocketServiceProvider'
 export interface ISocketService{
@@ -10,4 +11,5 @@ export interface ISocketService{
   emitRecipeUpdateEvent(recipe: Recipe)
   emitRecipeRatingUpdateEvent(recipe: Recipe, rating: Rating)
   emitRecipeDeleteEvent(recipe: Recipe)
+  emitRecipeFavoriteUpdateEvent(favoriteDTO: FavoriteDto)
 }

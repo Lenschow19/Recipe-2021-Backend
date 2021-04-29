@@ -12,6 +12,7 @@ import { CategoryEntity } from '../../infrastructure/data-source/postgres/entiti
 import { Rating } from '../models/rating';
 import { RatingEntity } from '../../infrastructure/data-source/postgres/entities/rating.entity';
 import { FavoriteEntity } from '../../infrastructure/data-source/postgres/entities/favorite.entity';
+import { FavoriteDto } from '../../api/dtos/favorite.dto';
 
 @Injectable()
 export class RecipeService implements IRecipeService{
@@ -201,6 +202,44 @@ export class RecipeService implements IRecipeService{
     ratingEntity.recipe = JSON.parse(JSON.stringify({ID: rating.recipeID}));
     await this.ratingRepository.save(ratingEntity);
     return this.getRecipeById(rating.recipeID);
+  }
+
+  async favoriteRecipe(favoriteDTO: FavoriteDto): Promise<boolean> {
+
+    if(favoriteDTO.userID <= 0)
+    {
+      throw new Error('Invalid user ID received');
+    }
+    if(favoriteDTO.recipeID <= 0)
+    {
+      throw new Error('Invalid recipe ID received');
+    }
+
+    const favoriteEntity = this.favoriteRepository.create();
+    favoriteEntity.user = JSON.parse(JSON.stringify({ID: favoriteDTO.userID}));
+    favoriteEntity.recipe = JSON.parse(JSON.stringify({ID: favoriteDTO.recipeID}));
+    favoriteEntity.isFavorite = favoriteDTO.favorite;
+    await this.favoriteRepository.save(favoriteEntity);
+    return true;
+  }
+
+  async unfavoriteRecipe(favoriteDTO: FavoriteDto): Promise<boolean> {
+
+    if(favoriteDTO.userID <= 0)
+    {
+      throw new Error('Invalid user ID received');
+    }
+    if(favoriteDTO.recipeID <= 0)
+    {
+      throw new Error('Invalid recipe ID received');
+    }
+
+    const favoriteDeleted = await this.favoriteRepository.createQueryBuilder().delete()
+      .where("recipeID = :recipeID AND userID = :userID", { recipeID: `${favoriteDTO.recipeID}`, userID: `${favoriteDTO.userID}`})
+      .execute();
+
+    if(favoriteDeleted.affected){return true;}
+    return false;
   }
 
   async validateRecipe(recipe: Recipe){

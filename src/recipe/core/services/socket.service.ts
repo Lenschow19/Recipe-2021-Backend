@@ -3,6 +3,7 @@ import { Server } from 'socket.io';
 import { ISocketService } from '../primary-ports/socket.service.interface';
 import { Recipe } from '../models/recipe';
 import { Rating } from '../models/rating';
+import { FavoriteDto } from '../../api/dtos/favorite.dto';
 
 @Injectable()
 export class SocketService implements ISocketService{
@@ -30,5 +31,9 @@ export class SocketService implements ISocketService{
 
   emitRecipeDeleteEvent(recipe: Recipe) {
     this.server.emit('recipeDeleted', recipe);
+  }
+
+  emitRecipeFavoriteUpdateEvent(favoriteDTO: FavoriteDto) {
+    this.server.emit('recipeFavoriteUpdate', favoriteDTO);
   }
 }

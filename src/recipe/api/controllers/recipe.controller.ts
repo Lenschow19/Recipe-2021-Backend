@@ -21,6 +21,7 @@ import { RecipeGetDto } from '../dtos/recipe.get.dto';
 import { RecipeDeleteDto } from '../dtos/recipe.delete.dto';
 import { ISocketService, ISocketServiceProvider } from '../../core/primary-ports/socket.service.interface';
 import { Rating } from '../../core/models/rating';
+import { FavoriteDto } from '../dtos/favorite.dto';
 
 @Controller('recipe')
 export class RecipeController {
@@ -130,6 +131,41 @@ export class RecipeController {
     catch (e)
     {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('favorite')
+  async favoriteRecipe(@MessageBody() favoriteDTO: FavoriteDto){
+    try
+    {
+      await this.recipeService.favoriteRecipe(favoriteDTO);
+      this.socketService.emitRecipeFavoriteUpdateEvent(favoriteDTO);
+      return favoriteDTO;
+    }
+    catch (e)
+    {
+      throw new HttpException('Error saving favorite', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('unfavorite')
+  async unfavoriteRecipe(@MessageBody() favoriteDTO: FavoriteDto){
+    try
+    {
+      const deleted = await this.recipeService.unfavoriteRecipe(favoriteDTO);
+      if(deleted){
+        this.socketService.emitRecipeFavoriteUpdateEvent(favoriteDTO);
+      }
+      else{
+        throw new Error('Error removing favorite');
+      }
+      return favoriteDTO;
+    }
+    catch (e)
+    {
+      throw new HttpException('Error removing favorite', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
