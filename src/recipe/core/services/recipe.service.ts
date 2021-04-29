@@ -35,7 +35,7 @@ export class RecipeService implements IRecipeService{
     if(newRecipe == null || newRecipe == undefined){throw new Error('Error saving recipe')}
 
     const createdRecipe: Recipe = JSON.parse(JSON.stringify(newRecipe));
-    createdRecipe.averageRating = 0;
+  createdRecipe.averageRating = 0;
     return createdRecipe;
   }
 
@@ -43,7 +43,7 @@ export class RecipeService implements IRecipeService{
 
     let qb = this.recipeRepository.createQueryBuilder("recipe");
     qb.leftJoin('recipe.ratings', 'ratings');
-    qb.addSelect('CAST(CAST(SUM(ratings.rating) AS DOUBLE PRECISION)/CAST(COUNT(ratings.rating) AS DOUBLE PRECISION) AS NUMERIC(5,2))', 'average_rating').groupBy('recipe.ID');
+    qb.addSelect('CAST(CAST(SUM(ratings.rating) AS DOUBLE PRECISION)/CAST(COUNT(ratings.rating) AS DOUBLE PRECISION) AS NUMERIC(5,1))', 'average_rating').groupBy('recipe.ID');
 
     if(filter.name != null && filter.name !== '')
     {
@@ -130,7 +130,7 @@ export class RecipeService implements IRecipeService{
     const recipeConverted: Recipe = JSON.parse(JSON.stringify(recipe));
 
     const averageRating = await this.ratingRepository.createQueryBuilder('rating')
-    .select('CAST(CAST(SUM(rating.rating) AS DOUBLE PRECISION)/CAST(COUNT(rating) AS DOUBLE PRECISION) AS NUMERIC(5,2))', 'average_rating').where('rating.recipeID = :recipeID', {recipeID: `${recipeID}`})
+    .select('CAST(CAST(SUM(rating.rating) AS DOUBLE PRECISION)/CAST(COUNT(rating) AS DOUBLE PRECISION) AS NUMERIC(5,1))', 'average_rating').where('rating.recipeID = :recipeID', {recipeID: `${recipeID}`})
       .getRawOne();
 
 
