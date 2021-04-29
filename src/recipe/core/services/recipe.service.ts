@@ -9,8 +9,6 @@ import { Filter } from '../models/filter';
 import { FilterList } from '../models/filterList';
 import { Category } from '../models/category';
 import { CategoryEntity } from '../../infrastructure/data-source/postgres/entities/category.entity';
-import { RecipeGetDto } from '../../api/dtos/recipe.get.dto';
-import { RecipeDeleteDto } from '../../api/dtos/recipe.delete.dto';
 import { Rating } from '../models/rating';
 import { RatingEntity } from '../../infrastructure/data-source/postgres/entities/rating.entity';
 
@@ -94,11 +92,6 @@ export class RecipeService implements IRecipeService{
     return filterList;
   }
 
-  async getRecipeCategories(): Promise<Category>{
-    const categories: CategoryEntity[] = await this.categoryRepository.find();
-    return JSON.parse(JSON.stringify(categories));
-  }
-
   async getRecipeById(recipeID: number, userIDOwner?: number, userIDRating?: number): Promise<Recipe> {
 
     if(recipeID <= 0)
@@ -130,10 +123,8 @@ export class RecipeService implements IRecipeService{
     const recipeConverted: Recipe = JSON.parse(JSON.stringify(recipe));
 
     const averageRating = await this.ratingRepository.createQueryBuilder('rating')
-    .select('CAST(CAST(SUM(rating.rating) AS DOUBLE PRECISION)/CAST(COUNT(rating) AS DOUBLE PRECISION) AS NUMERIC(5,1))', 'average_rating').where('rating.recipeID = :recipeID', {recipeID: `${recipeID}`})
+      .select('CAST(CAST(SUM(rating.rating) AS DOUBLE PRECISION)/CAST(COUNT(rating) AS DOUBLE PRECISION) AS NUMERIC(5,1))', 'average_rating').where('rating.recipeID = :recipeID', {recipeID: `${recipeID}`})
       .getRawOne();
-
-
 
     recipeConverted.averageRating = (averageRating.average_rating != null) ? averageRating.average_rating : 0;
 
@@ -170,6 +161,30 @@ export class RecipeService implements IRecipeService{
     return JSON.parse(JSON.stringify(updatedRecipe));
   }
 
+  async deleteRecipe(recipeID: number, userID: number): Promise<boolean> {
+
+    const recipe = await this.recipeRepository.createQueryBuilder().delete()
+      .where("ID = :recipeID", { recipeID: `${recipeID}`})
+      .andWhere("userID = :userID", {userID: `${userID}`})
+      .execute();
+
+    if(recipe.affected){return true;}
+    return false;
+  }
+
+  async getRecipeCategories(): Promise<Category>{
+    const categories: CategoryEntity[] = await this.categoryRepository.find();
+    return JSON.parse(JSON.stringify(categories));
+  }
+
+  async createRating(rating: Rating): Promise<Recipe> {
+    const ratingEntity = this.ratingRepository.create(rating);
+    ratingEntity.user = JSON.parse(JSON.stringify({ID: rating.userID}));
+    ratingEntity.recipe = JSON.parse(JSON.stringify({ID: rating.recipeID}));
+    await this.ratingRepository.save(ratingEntity);
+    return this.getRecipeById(rating.recipeID);
+  }
+
   async validateRecipe(recipe: Recipe){
     if(recipe.title.length < 5 || recipe.title.length > 32){
       throw new Error('Recipe name must be between 5 and 32 characters');
@@ -201,24 +216,4 @@ export class RecipeService implements IRecipeService{
       throw new Error('No such category found. Please refresh page.');
     }
   }
-
-  async deleteRecipe(recipeID: number, userID: number): Promise<boolean> {
-
-    const recipe = await this.recipeRepository.createQueryBuilder().delete()
-      .where("ID = :recipeID", { recipeID: `${recipeID}`})
-      .andWhere("userID = :userID", {userID: `${userID}`})
-      .execute();
-
-    if(recipe.affected){return true;}
-    return false;
-  }
-
-  async createRating(rating: Rating): Promise<Recipe> {
-    const ratingEntity = this.ratingRepository.create(rating);
-    ratingEntity.user = JSON.parse(JSON.stringify({ID: rating.userID}));
-    ratingEntity.recipe = JSON.parse(JSON.stringify({ID: rating.recipeID}));
-    await this.ratingRepository.save(ratingEntity);
-    return this.getRecipeById(rating.recipeID);
-  }
-
 }

@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Delete,
   Get,
@@ -11,14 +10,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { MessageBody, WebSocketServer } from '@nestjs/websockets';
+import { MessageBody } from '@nestjs/websockets';
 import { User } from '../../core/models/user';
 import { Recipe } from '../../core/models/recipe';
 import { IUserService, IUserServiceProvider } from '../../core/primary-ports/user.service.interface';
 import { IRecipeService, IRecipeServiceProvider } from '../../core/primary-ports/recipe.service.interface';
 import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import { Filter } from '../../core/models/filter';
-import { query } from 'express';
 import { RecipeGetDto } from '../dtos/recipe.get.dto';
 import { RecipeDeleteDto } from '../dtos/recipe.delete.dto';
 import { ISocketService, ISocketServiceProvider } from '../../core/primary-ports/socket.service.interface';
@@ -55,22 +53,14 @@ export class RecipeController {
 
   @Get('getRecipes')
   async getRecipes(@Query() filter: Filter){
-
     try{return await this.recipeService.getRecipes(filter);}
     catch (e) {console.log(e.message);throw new HttpException(e.message, HttpStatus.BAD_REQUEST);}
-
-
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('getPersonalRecipes')
   async getPersonalRecipes(@Query() filter: Filter){
     return this.recipeService.getRecipes(filter);
-  }
-
-  @Get('recipeCategories')
-  async getRecipeCategories(){
-    return await this.recipeService.getRecipeCategories();
   }
 
   @UseGuards(JwtAuthGuard)
@@ -108,7 +98,7 @@ export class RecipeController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('deleteRecipe')
+  @Delete('deleteRecipe')
   async deleteRecipe(@MessageBody() recipeDeleteDTO: RecipeDeleteDto){
     try
     {
@@ -121,6 +111,11 @@ export class RecipeController {
     {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @Get('recipeCategories')
+  async getRecipeCategories(){
+    return await this.recipeService.getRecipeCategories();
   }
 
   @UseGuards(JwtAuthGuard)

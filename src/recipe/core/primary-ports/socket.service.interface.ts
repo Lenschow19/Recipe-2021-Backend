@@ -6,9 +6,8 @@ export const ISocketServiceProvider = 'ISocketServiceProvider'
 export interface ISocketService{
 
   setServer(socket: Server)
-  emitRecipeUpdateEvent(recipe: Recipe)
   emitRecipeCreateEvent(recipe: Recipe)
-  emitRecipeDeleteEvent(recipe: Recipe)
+  emitRecipeUpdateEvent(recipe: Recipe)
   emitRecipeRatingUpdateEvent(recipe: Recipe, rating: Rating)
-
+  emitRecipeDeleteEvent(recipe: Recipe)
 }

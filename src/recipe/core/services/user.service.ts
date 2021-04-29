@@ -1,41 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { IUserService } from '../primary-ports/user.service.interface';
 import { AuthenticationHelper } from '../../../auth/authentication.helper';
-import { LoginDto } from '../../api/dtos/login.dto';
 import { User } from '../models/user';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../infrastructure/data-source/postgres/entities/user.entity';
 import { Repository } from 'typeorm';
-import { LoginResponseDto } from '../../api/dtos/login.response.dto';
 
 @Injectable()
 export class UserService implements IUserService{
 
   constructor(@InjectRepository(UserEntity) private userRepository: Repository<UserEntity>, private authenticationHelper: AuthenticationHelper) {}
-
-  generateSalt(): string {
-    return this.authenticationHelper.generateSalt();
-  }
-
-  generateHash(password: string, salt: string): string {
-    return this.authenticationHelper.generateHash(password, salt);
-  }
-
-  async login(username: string, password: string): Promise<User>{
-
-    if(username == null || password == null){
-      throw new Error('Username or Password is non-existing');
-    }
-
-    let foundUser: User = await this.userRepository.findOne({where: `"username" ILIKE '${username}'`})
-
-    if(foundUser == null){
-      throw new Error('No user registered with such a name');
-    }
-
-    this.authenticationHelper.validateLogin(foundUser, password);
-    return foundUser;
-  }
 
   createUser(username: string, password: string): User {
 
@@ -49,7 +23,6 @@ export class UserService implements IUserService{
     let salt: string = this.authenticationHelper.generateSalt();
     let hashedPassword: string = this.authenticationHelper.generateHash(password, salt);
     return {ID: 0, username: username, password: hashedPassword, salt: salt};
-
   }
 
   async addUser(user: User): Promise<User> {
@@ -64,6 +37,14 @@ export class UserService implements IUserService{
     return newUser;
   }
 
+  generateSalt(): string {
+    return this.authenticationHelper.generateSalt();
+  }
+
+  generateHash(password: string, salt: string): string {
+    return this.authenticationHelper.generateHash(password, salt);
+  }
+
   generateJWTToken(user: User): string {
 
     if(user == null){
@@ -75,11 +56,6 @@ export class UserService implements IUserService{
     }
 
     return this.authenticationHelper.generateJWTToken(user);
-  }
-
-  verifyJWTToken(token: string): string{
-    try{return this.authenticationHelper.validateJWTToken(token);}
-    catch (e) {throw new Error('Invalid signature');}
   }
 
   async getUserById(userID: number): Promise<User> {
@@ -115,6 +91,27 @@ export class UserService implements IUserService{
 
     if(updatedUser == null || updatedUser == undefined){throw new Error('Error updating user password')}
     return true;
+  }
+
+  async login(username: string, password: string): Promise<User>{
+
+    if(username == null || password == null){
+      throw new Error('Username or Password is non-existing');
+    }
+
+    let foundUser: User = await this.userRepository.findOne({where: `"username" ILIKE '${username}'`})
+
+    if(foundUser == null){
+      throw new Error('No user registered with such a name');
+    }
+
+    this.authenticationHelper.validateLogin(foundUser, password);
+    return foundUser;
+  }
+
+  verifyJWTToken(token: string): string{
+    try{return this.authenticationHelper.validateJWTToken(token);}
+    catch (e) {throw new Error('Invalid signature');}
   }
 
 }

@@ -1,7 +1,5 @@
-import { Column, Entity, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { RecipeEntity } from './recipe.entity';
-import { IngredientEntryEntity } from './ingredient-entry.entity';
-import { IngredientEntry } from '../../../../core/models/ingredient-entry';
 
 @Entity()
 export class CategoryEntity {

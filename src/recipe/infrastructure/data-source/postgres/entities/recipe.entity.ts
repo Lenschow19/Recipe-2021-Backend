@@ -1,4 +1,4 @@
-import { Column, Entity, Index, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { IngredientEntry } from '../../../../core/models/ingredient-entry';
 import { IngredientEntryEntity } from './ingredient-entry.entity';
 import { UserEntity } from './user.entity';

@@ -15,16 +15,12 @@ export class SocketService implements ISocketService{
     this.server = socket;
   }
 
-  emitRecipeUpdateEvent(recipe: Recipe) {
-    this.server.emit('recipeUpdated', recipe);
-  }
-
   emitRecipeCreateEvent(recipe: Recipe) {
     this.server.emit('recipeCreated', recipe);
   }
 
-  emitRecipeDeleteEvent(recipe: Recipe) {
-    this.server.emit('recipeDeleted', recipe);
+  emitRecipeUpdateEvent(recipe: Recipe) {
+    this.server.emit('recipeUpdated', recipe);
   }
 
   emitRecipeRatingUpdateEvent(recipe: Recipe, rating: Rating) {
@@ -32,4 +28,7 @@ export class SocketService implements ISocketService{
     this.server.emit('recipeRatingUpdated', rating);
   }
 
+  emitRecipeDeleteEvent(recipe: Recipe) {
+    this.server.emit('recipeDeleted', recipe);
+  }
 }

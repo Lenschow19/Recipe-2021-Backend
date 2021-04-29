@@ -5,7 +5,6 @@ import { UserController } from './controllers/user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../infrastructure/data-source/postgres/entities/user.entity';
 import { AuthModule } from '../../auth/auth.module';
-import { AppModule } from '../../app.module';
 import { SocketModule } from './socket.module';
 
 @Module({

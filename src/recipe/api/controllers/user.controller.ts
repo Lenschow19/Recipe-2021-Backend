@@ -1,51 +1,18 @@
-import {
-  Controller,
-  Get,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Post, Put, Query,
-  UnauthorizedException,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus, Inject, Post, Put, Query, UseGuards, } from '@nestjs/common';
 import { MessageBody } from '@nestjs/websockets';
 import { IUserService, IUserServiceProvider } from '../../core/primary-ports/user.service.interface';
 import { LoginDto } from '../dtos/login.dto';
 import { User } from '../../core/models/user';
 import { LoginResponseDto } from '../dtos/login.response.dto';
-import { Filter } from '../../core/models/filter';
 import { UserGetDto } from '../dtos/user.get.dto';
 import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import { UserUpdateDto } from '../dtos/user.update.dto';
-import { UserService } from '../../core/services/user.service';
 import { UserInfoDto } from '../dtos/user.info.dto';
 
 @Controller('user')
 export class UserController {
 
   constructor(@Inject(IUserServiceProvider) private userService: IUserService) {}
-
-  @Post('login')
-  async login(@MessageBody() loginDto: LoginDto){
-
-    try
-    {
-      const foundUser: User = await this.userService.login(loginDto.username, loginDto.password);
-
-      if(foundUser == null ||foundUser == undefined){
-        throw new HttpException('Error loading user', HttpStatus.BAD_REQUEST);
-      }
-
-      const tokenString = this.userService.generateJWTToken(foundUser);
-      const responseDTO: LoginResponseDto = {token: tokenString};
-      return responseDTO;
-    }
-    catch (e)
-    {
-      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
-    }
-
-  }
 
   @Post('register')
   async register(@MessageBody() loginDto: LoginDto){
@@ -65,12 +32,6 @@ export class UserController {
     {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
-  }
-
-  @Post('verifyToken')
-  verifyToken(@MessageBody() loginResponseDTO: LoginResponseDto){
-    try{return this.userService.verifyJWTToken(loginResponseDTO.token);}
-    catch (e) {throw new HttpException(e.message, HttpStatus.NOT_FOUND);}
   }
 
   @UseGuards(JwtAuthGuard)
@@ -106,4 +67,31 @@ export class UserController {
     catch (e) {throw new HttpException(e.message, HttpStatus.BAD_REQUEST);}
   }
 
+  @Post('login')
+  async login(@MessageBody() loginDto: LoginDto){
+
+    try
+    {
+      const foundUser: User = await this.userService.login(loginDto.username, loginDto.password);
+
+      if(foundUser == null ||foundUser == undefined){
+        throw new HttpException('Error loading user', HttpStatus.BAD_REQUEST);
+      }
+
+      const tokenString = this.userService.generateJWTToken(foundUser);
+      const responseDTO: LoginResponseDto = {token: tokenString};
+      return responseDTO;
+    }
+    catch (e)
+    {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+
+  }
+
+  @Post('verifyToken')
+  verifyToken(@MessageBody() loginResponseDTO: LoginResponseDto){
+    try{return this.userService.verifyJWTToken(loginResponseDTO.token);}
+    catch (e) {throw new HttpException(e.message, HttpStatus.NOT_FOUND);}
+  }
 }
