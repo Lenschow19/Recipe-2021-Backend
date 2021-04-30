@@ -71,10 +71,8 @@ export class RecipeService implements IRecipeService{
 
     const showFavorites: string = String(filter.showFavorites);
 
-
     if(showFavorites === 'true')
     {
-      console.log("RAN");
       qb.andWhere(`"isFavorite" = true`);
     }
 
@@ -97,7 +95,6 @@ export class RecipeService implements IRecipeService{
         qb.orderBy('average_rating', 'DESC', 'NULLS LAST');
       }
     }
-
 
     qb.offset((filter.currentPage - 1) * filter.itemsPrPage);
     qb.limit(filter.itemsPrPage);
@@ -123,7 +120,6 @@ export class RecipeService implements IRecipeService{
     qb.leftJoinAndSelect('recipe.user', 'user');
     qb.leftJoinAndSelect('recipe.ingredientEntries', 'ingredientEntries')
     qb.leftJoinAndSelect('recipe.category', 'category')
-    qb.leftJoin('recipe.ratings', 'ratings');
     qb.addSelect('COALESCE(CAST(CAST(SUM(ratings.rating) AS DOUBLE PRECISION)/CAST(COUNT(ratings.rating) AS DOUBLE PRECISION) AS NUMERIC(5,1)),0)', 'average_rating')
     qb.andWhere(`recipe.ID = :RecipeID`, { RecipeID: `${recipeID}`});
     qb.addGroupBy('user.ID, ingredientEntries.ID, category.ID, recipe.ID')
@@ -144,6 +140,9 @@ export class RecipeService implements IRecipeService{
 
       qb.leftJoin(qb => qb.select("favorite.isFavorite, favorite.recipeID, favorite.userID").from(FavoriteEntity, 'favorite').where('favorite.userID = :userIDFavorite', {userIDFavorite: `${userIDRating}`}), 'favorites', '"favorites"."recipeID" = recipe.ID').addGroupBy('"favorites"."recipeID", "favorites"."userID", "favorites"."isFavorite"');
       qb.addSelect('COALESCE("isFavorite", false)', 'isFavorite');
+
+      qb.leftJoin(qb => qb.select().from(RatingEntity, 'rating').where('rating.userID = :userID', {userID: `${userIDRating}`}), 'ratings', '"ratings"."recipeID" = recipe.ID').addGroupBy('"ratings"."recipeID", "ratings"."userID", "ratings"."rating"');
+      qb.addSelect('COALESCE("rating", 0)', 'rating');
     }
 
     const recipe: RecipeEntity = await qb.getOne();
@@ -155,20 +154,7 @@ export class RecipeService implements IRecipeService{
     recipeConverted.user.password = '';
     recipeConverted.isFavorite = (recipeRaw.isFavorite != null) ? recipeRaw.isFavorite : false;
     recipeConverted.averageRating = recipeRaw.average_rating;
-
-    if(userIDRating !== undefined && userIDRating !== null)
-    {
-      if(userIDRating <= 0)
-      {
-        throw new Error('Incorrect user ID entered');
-      }
-
-      const userRating = await this.ratingRepository.createQueryBuilder('rating')
-        .select('rating.rating', 'user_rating').where('rating.userID = :userID AND rating.recipeID = :recipeID', {userID: `${userIDRating}`, recipeID: `${recipeID}`})
-        .getRawOne();
-
-      recipeConverted.personalRating = (userRating != null && userRating != undefined) ? userRating.user_rating : 0;
-    }
+    recipeConverted.personalRating = (recipeRaw.rating != null) ? recipeRaw.rating : 0;
 
     return recipeConverted;
   }
