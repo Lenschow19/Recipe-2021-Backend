@@ -18,7 +18,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           __dirname + '/../postgres/entities/*.entity.js',
         ],
         synchronize: true,
-        ssl: false
+        extra: {
+          ssl: true
+        }
       })
     }),
   ],
