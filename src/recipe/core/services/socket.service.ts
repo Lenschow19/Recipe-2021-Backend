@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { ISocketService } from '../primary-ports/socket.service.interface';
 import { Recipe } from '../models/recipe';
-import { Rating } from '../models/rating';
+import { RatingDto } from '../../api/dtos/rating.dto';
 import { FavoriteDto } from '../../api/dtos/favorite.dto';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class SocketService implements ISocketService{
     this.server.emit('recipeUpdated', recipe);
   }
 
-  emitRecipeRatingUpdateEvent(recipe: Recipe, rating: Rating) {
+  emitRecipeRatingUpdateEvent(recipe: Recipe, rating: RatingDto) {
     this.server.emit('recipeUpdated', recipe);
     this.server.emit('recipeRatingUpdated', rating);
   }

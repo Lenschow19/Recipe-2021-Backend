@@ -10,11 +10,14 @@ import { CategoryEntity } from '../infrastructure/data-source/postgres/entities/
 import { SocketModule } from './socket.module';
 import { RatingEntity } from '../infrastructure/data-source/postgres/entities/rating.entity';
 import { FavoriteEntity } from '../infrastructure/data-source/postgres/entities/favorite.entity';
+import { IRatingServiceProvider } from '../core/primary-ports/rating.service.interface';
+import { RatingService } from '../core/services/rating.service';
+import { RatingController } from './controllers/rating.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RecipeEntity, IngredientEntryEntity, CategoryEntity, RatingEntity, FavoriteEntity]), UserModule, SocketModule, ],
-  providers: [{provide: IRecipeServiceProvider, useClass: RecipeService}],
-  controllers: [RecipeController],
-  exports: [IRecipeServiceProvider]
+  imports: [TypeOrmModule.forFeature([RecipeEntity, IngredientEntryEntity, CategoryEntity, RatingEntity, FavoriteEntity]), UserModule, SocketModule],
+  providers: [{provide: IRecipeServiceProvider, useClass: RecipeService}, {provide: IRatingServiceProvider, useClass: RatingService}],
+  controllers: [RecipeController, RatingController],
+  exports: [IRecipeServiceProvider, IRatingServiceProvider]
 })
 export class RecipeModule {}

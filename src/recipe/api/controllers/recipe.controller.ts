@@ -20,14 +20,15 @@ import { Filter } from '../../core/models/filter';
 import { RecipeGetDto } from '../dtos/recipe.get.dto';
 import { RecipeDeleteDto } from '../dtos/recipe.delete.dto';
 import { ISocketService, ISocketServiceProvider } from '../../core/primary-ports/socket.service.interface';
-import { Rating } from '../../core/models/rating';
+import { RatingDto } from '../dtos/rating.dto';
 import { FavoriteDto } from '../dtos/favorite.dto';
+import { IRatingService, IRatingServiceProvider } from '../../core/primary-ports/rating.service.interface';
 
 @Controller('recipe')
 export class RecipeController {
 
   constructor(@Inject(IUserServiceProvider) private userService: IUserService, @Inject(IRecipeServiceProvider) private recipeService: IRecipeService,
-              @Inject(ISocketServiceProvider) private socketService: ISocketService) {}
+              @Inject(ISocketServiceProvider) private socketService: ISocketService, @Inject(IRatingServiceProvider) private ratingService: IRatingService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
@@ -117,37 +118,6 @@ export class RecipeController {
   @Get('recipeCategories')
   async getRecipeCategories(){
     return await this.recipeService.getRecipeCategories();
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('giveRating')
-  async giveRating(@MessageBody() rating: Rating){
-    try
-    {
-      const recipe: Recipe = await this.recipeService.createRating(rating);
-      this.socketService.emitRecipeRatingUpdateEvent(recipe, rating);
-      return recipe;
-    }
-    catch (e)
-    {
-      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Delete('deleteRating')
-  async deleteRating(@MessageBody() rating: Rating){
-    try
-    {
-      const recipe: Recipe = await this.recipeService.deleteRating(rating);
-      rating.rating = 0;
-      this.socketService.emitRecipeRatingUpdateEvent(recipe, rating);
-      return recipe;
-    }
-    catch (e)
-    {
-      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
-    }
   }
 
   @UseGuards(JwtAuthGuard)

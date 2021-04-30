@@ -9,7 +9,7 @@ import { Filter } from '../models/filter';
 import { FilterList } from '../models/filterList';
 import { Category } from '../models/category';
 import { CategoryEntity } from '../../infrastructure/data-source/postgres/entities/category.entity';
-import { Rating } from '../models/rating';
+import { RatingDto } from '../../api/dtos/rating.dto';
 import { RatingEntity } from '../../infrastructure/data-source/postgres/entities/rating.entity';
 import { FavoriteEntity } from '../../infrastructure/data-source/postgres/entities/favorite.entity';
 import { FavoriteDto } from '../../api/dtos/favorite.dto';
@@ -190,28 +190,6 @@ export class RecipeService implements IRecipeService{
   async getRecipeCategories(): Promise<Category>{
     const categories: CategoryEntity[] = await this.categoryRepository.find();
     return JSON.parse(JSON.stringify(categories));
-  }
-
-  async createRating(rating: Rating): Promise<Recipe> {
-    const ratingEntity = this.ratingRepository.create(rating);
-    ratingEntity.user = JSON.parse(JSON.stringify({ID: rating.userID}));
-    ratingEntity.recipe = JSON.parse(JSON.stringify({ID: rating.recipeID}));
-    await this.ratingRepository.save(ratingEntity);
-    return this.getRecipeById(rating.recipeID);
-  }
-
-  async deleteRating(rating: Rating): Promise<Recipe> {
-
-    const ratingDeleted = await this.ratingRepository.createQueryBuilder().delete()
-      .where("recipeID = :recipeID AND userID = :userID", { recipeID: `${rating.recipeID}`, userID: `${rating.userID}`})
-      .execute();
-
-    if(ratingDeleted.affected){
-      return await this.getRecipeById(rating.recipeID);
-    }
-
-    throw new Error('Could not find rating');
-    return null;
   }
 
   async favoriteRecipe(favoriteDTO: FavoriteDto): Promise<boolean> {
