@@ -120,6 +120,7 @@ export class RecipeService implements IRecipeService{
     qb.leftJoinAndSelect('recipe.user', 'user');
     qb.leftJoinAndSelect('recipe.ingredientEntries', 'ingredientEntries')
     qb.leftJoinAndSelect('recipe.category', 'category')
+    qb.leftJoin('recipe.ratings', 'ratings');
     qb.addSelect('COALESCE(CAST(CAST(SUM(ratings.rating) AS DOUBLE PRECISION)/CAST(COUNT(ratings.rating) AS DOUBLE PRECISION) AS NUMERIC(5,1)),0)', 'average_rating')
     qb.andWhere(`recipe.ID = :RecipeID`, { RecipeID: `${recipeID}`});
     qb.addGroupBy('user.ID, ingredientEntries.ID, category.ID, recipe.ID')
@@ -141,8 +142,8 @@ export class RecipeService implements IRecipeService{
       qb.leftJoin(qb => qb.select("favorite.isFavorite, favorite.recipeID, favorite.userID").from(FavoriteEntity, 'favorite').where('favorite.userID = :userIDFavorite', {userIDFavorite: `${userIDRating}`}), 'favorites', '"favorites"."recipeID" = recipe.ID').addGroupBy('"favorites"."recipeID", "favorites"."userID", "favorites"."isFavorite"');
       qb.addSelect('COALESCE("isFavorite", false)', 'isFavorite');
 
-      qb.leftJoin(qb => qb.select().from(RatingEntity, 'rating').where('rating.userID = :userID', {userID: `${userIDRating}`}), 'ratings', '"ratings"."recipeID" = recipe.ID').addGroupBy('"ratings"."recipeID", "ratings"."userID", "ratings"."rating"');
-      qb.addSelect('COALESCE("rating", 0)', 'rating');
+      qb.leftJoin(qb => qb.select("ratingPersonal.rating as personal_rating, ratingPersonal.recipeID, ratingPersonal.userID").from(RatingEntity, 'ratingPersonal').where('ratingPersonal.userID = :userID', {userID: `${userIDRating}`}), 'ratingsPersonal', '"ratingsPersonal"."recipeID" = recipe.ID').addGroupBy('"ratingsPersonal"."recipeID", "ratingsPersonal"."userID", "ratingsPersonal"."personal_rating"');
+      qb.addSelect('COALESCE("personal_rating", 0)', 'personal_rating');
     }
 
     const recipe: RecipeEntity = await qb.getOne();
@@ -154,7 +155,7 @@ export class RecipeService implements IRecipeService{
     recipeConverted.user.password = '';
     recipeConverted.isFavorite = (recipeRaw.isFavorite != null) ? recipeRaw.isFavorite : false;
     recipeConverted.averageRating = recipeRaw.average_rating;
-    recipeConverted.personalRating = (recipeRaw.rating != null) ? recipeRaw.rating : 0;
+    recipeConverted.personalRating = (recipeRaw.personal_rating != null) ? recipeRaw.personal_rating : 0;
 
     return recipeConverted;
   }
