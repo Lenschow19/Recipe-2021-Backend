@@ -9,5 +9,6 @@ export interface Filter{
 
   userID?: number
   userIDFavorite?: number
+  showFavorites?: boolean
 
 }

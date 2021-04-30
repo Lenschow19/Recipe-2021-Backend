@@ -69,6 +69,15 @@ export class RecipeService implements IRecipeService{
       qb.addSelect('COALESCE("isFavorite", false)', 'isFavorite');
     }
 
+    const showFavorites: string = String(filter.showFavorites);
+
+
+    if(showFavorites === 'true')
+    {
+      console.log("RAN");
+      qb.andWhere(`"isFavorite" = true`);
+    }
+
     if(filter.sorting != null && filter.sorting === 'ASC' || filter.sorting != null && filter.sorting === 'DESC')
     {
       if(filter.sortingType != null && filter.sortingType === 'ALF')

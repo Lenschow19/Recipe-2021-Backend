@@ -1,6 +1,13 @@
-import { OnGatewayInit, WebSocketGateway, WebSocketServer, } from '@nestjs/websockets';
+import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayInit,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { Inject } from '@nestjs/common';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { ISocketService, ISocketServiceProvider } from '../../core/primary-ports/socket.service.interface';
 
 @WebSocketGateway()
@@ -12,5 +19,14 @@ export class RecipeGateway implements OnGatewayInit{
 
   afterInit(server: Server){
     this.socketService.setServer(server);
+  }
+
+  @SubscribeMessage('joinPersonalRoom')
+  async handleUpdateEvent(@MessageBody() userID: number, @ConnectedSocket() client: Socket) {
+    if(userID != null)
+    {
+      client.leaveAll();
+      client.join(`${userID}`);
+    }
   }
 }

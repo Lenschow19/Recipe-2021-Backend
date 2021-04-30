@@ -34,6 +34,6 @@ export class SocketService implements ISocketService{
   }
 
   emitRecipeFavoriteUpdateEvent(favoriteDTO: FavoriteDto) {
-    this.server.emit('recipeFavoriteUpdate', favoriteDTO);
+    this.server.to(`${favoriteDTO.userID}`).emit('recipeFavoriteUpdate', favoriteDTO);
   }
 }
