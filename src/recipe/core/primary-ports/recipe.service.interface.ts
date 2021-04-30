@@ -15,6 +15,7 @@ export interface IRecipeService{
   deleteRecipe(recipeID: number, userID: number): Promise<boolean>
 
   createRating(rating: Rating): Promise<Recipe>
+  deleteRating(rating: Rating): Promise<Recipe>
 
   favoriteRecipe(favoriteDTO: FavoriteDto): Promise<boolean>
   unfavoriteRecipe(favoriteDTO: FavoriteDto): Promise<boolean>

@@ -135,6 +135,22 @@ export class RecipeController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Delete('deleteRating')
+  async deleteRating(@MessageBody() rating: Rating){
+    try
+    {
+      const recipe: Recipe = await this.recipeService.deleteRating(rating);
+      rating.rating = 0;
+      this.socketService.emitRecipeRatingUpdateEvent(recipe, rating);
+      return recipe;
+    }
+    catch (e)
+    {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('favorite')
   async favoriteRecipe(@MessageBody() favoriteDTO: FavoriteDto){
     try

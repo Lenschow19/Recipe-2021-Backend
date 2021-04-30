@@ -200,6 +200,20 @@ export class RecipeService implements IRecipeService{
     return this.getRecipeById(rating.recipeID);
   }
 
+  async deleteRating(rating: Rating): Promise<Recipe> {
+
+    const ratingDeleted = await this.ratingRepository.createQueryBuilder().delete()
+      .where("recipeID = :recipeID AND userID = :userID", { recipeID: `${rating.recipeID}`, userID: `${rating.userID}`})
+      .execute();
+
+    if(ratingDeleted.affected){
+      return await this.getRecipeById(rating.recipeID);
+    }
+
+    throw new Error('Could not find rating');
+    return null;
+  }
+
   async favoriteRecipe(favoriteDTO: FavoriteDto): Promise<boolean> {
 
     if(favoriteDTO.userID <= 0)
