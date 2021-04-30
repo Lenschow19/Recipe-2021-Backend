@@ -8,7 +8,7 @@ async function bootstrap() {
 
   const options: CorsOptions = {origin: ['https://recipeappfrontend.web.app/home']}
 
-  app.enableCors(options);
+  app.enableCors();
   const configService: ConfigService = app.get(ConfigService);
   await app.listen(configService.get('PORT') || 8080);
 }
