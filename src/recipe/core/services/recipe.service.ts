@@ -9,7 +9,6 @@ import { Filter } from '../models/filter';
 import { FilterList } from '../models/filterList';
 import { Category } from '../models/category';
 import { CategoryEntity } from '../../infrastructure/data-source/postgres/entities/category.entity';
-import { RatingDto } from '../../api/dtos/rating.dto';
 import { RatingEntity } from '../../infrastructure/data-source/postgres/entities/rating.entity';
 import { FavoriteEntity } from '../../infrastructure/data-source/postgres/entities/favorite.entity';
 import { FavoriteDto } from '../../api/dtos/favorite.dto';
@@ -36,7 +35,7 @@ export class RecipeService implements IRecipeService{
     if(newRecipe == null || newRecipe == undefined){throw new Error('Error saving recipe')}
 
     const createdRecipe: Recipe = JSON.parse(JSON.stringify(newRecipe));
-  createdRecipe.averageRating = 0;
+    createdRecipe.averageRating = 0;
     return createdRecipe;
   }
 
@@ -139,10 +138,16 @@ export class RecipeService implements IRecipeService{
     {
       if(userIDRating <= 0) {throw new Error('Incorrect user ID entered');}
 
-      qb.leftJoin(qb => qb.select("favorite.isFavorite, favorite.recipeID, favorite.userID").from(FavoriteEntity, 'favorite').where('favorite.userID = :userIDFavorite', {userIDFavorite: `${userIDRating}`}), 'favorites', '"favorites"."recipeID" = recipe.ID').addGroupBy('"favorites"."recipeID", "favorites"."userID", "favorites"."isFavorite"');
+      qb.leftJoin(qb => qb.select("favorite.isFavorite, favorite.recipeID, favorite.userID")
+        .from(FavoriteEntity, 'favorite').where('favorite.userID = :userIDFavorite', {userIDFavorite: `${userIDRating}`}), 'favorites', '"favorites"."recipeID" = recipe.ID')
+        .addGroupBy('"favorites"."recipeID", "favorites"."userID", "favorites"."isFavorite"');
+
       qb.addSelect('COALESCE("isFavorite", false)', 'isFavorite');
 
-      qb.leftJoin(qb => qb.select("ratingPersonal.rating as personal_rating, ratingPersonal.recipeID, ratingPersonal.userID").from(RatingEntity, 'ratingPersonal').where('ratingPersonal.userID = :userID', {userID: `${userIDRating}`}), 'ratingsPersonal', '"ratingsPersonal"."recipeID" = recipe.ID').addGroupBy('"ratingsPersonal"."recipeID", "ratingsPersonal"."userID", "ratingsPersonal"."personal_rating"');
+      qb.leftJoin(qb => qb.select("ratingPersonal.rating as personal_rating, ratingPersonal.recipeID, ratingPersonal.userID")
+        .from(RatingEntity, 'ratingPersonal').where('ratingPersonal.userID = :userID', {userID: `${userIDRating}`}), 'ratingsPersonal', '"ratingsPersonal"."recipeID" = recipe.ID')
+        .addGroupBy('"ratingsPersonal"."recipeID", "ratingsPersonal"."userID", "ratingsPersonal"."personal_rating"');
+
       qb.addSelect('COALESCE("personal_rating", 0)', 'personal_rating');
     }
 

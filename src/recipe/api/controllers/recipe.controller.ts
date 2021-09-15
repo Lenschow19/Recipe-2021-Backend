@@ -20,7 +20,6 @@ import { Filter } from '../../core/models/filter';
 import { RecipeGetDto } from '../dtos/recipe.get.dto';
 import { RecipeDeleteDto } from '../dtos/recipe.delete.dto';
 import { ISocketService, ISocketServiceProvider } from '../../core/primary-ports/socket.service.interface';
-import { RatingDto } from '../dtos/rating.dto';
 import { FavoriteDto } from '../dtos/favorite.dto';
 import { IRatingService, IRatingServiceProvider } from '../../core/primary-ports/rating.service.interface';
 

@@ -10,3 +10,5 @@ import { JwtStrategy } from './jwt.strategy';
   imports: [PassportModule, JwtModule.register({signOptions: {expiresIn: '60d'}})]
 })
 export class AuthModule {}
+
+

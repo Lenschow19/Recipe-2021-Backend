@@ -20,3 +20,5 @@ export class IngredientEntryEntity {
   @ManyToOne(() => RecipeEntity, (recipe: RecipeEntity) => recipe.ingredientEntries, { onDelete: "CASCADE"})
   public recipe: RecipeEntity
 }
+
+
